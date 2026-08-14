@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnGenerar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>...';
 
             // 1. Petición de Rendimiento General (Promedios)
-            let urlStats = `http://148.204.239.124:3002/api/examen/reporte-estadisticas?`;
+            let urlStats = `http://bitacoras.cecyt14.ipn.mx/api/examen/reporte-estadisticas?`;
             if(fechaInicio) urlStats += `fechaInicio=${fechaInicio}&`;
             if(fechaFin) urlStats += `fechaFin=${fechaFin}`;
             const resStats = await fetch(urlStats);
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!resStats.ok) throw new Error(datosStats.error || "Error en estadísticas");
 
             // 2. Petición de Alumnos y Tramposos (Por Grupo Y Fechas)
-            let urlProfesor = `http://148.204.239.124:3002/api/examen/reporte-profesor?`;
+            let urlProfesor = `http://bitacoras.cecyt14.ipn.mx/api/examen/reporte-profesor?`;
             if(fechaInicio) urlProfesor += `fechaInicio=${fechaInicio}&`;
             if(fechaFin) urlProfesor += `fechaFin=${fechaFin}&`;
             if(inputGrupo) urlProfesor += `grupo=${inputGrupo}`;
@@ -248,7 +248,7 @@ formIndividual.addEventListener('submit', async (e) => {
         btnPDFIndividual.classList.replace('bg-red-600', 'bg-gray-400');
         btnPDFIndividual.classList.add('cursor-not-allowed');
 
-        const respuesta = await fetch(`http://148.204.239.124:3002/api/examen/reporte-individual/${boleta}`);
+        const respuesta = await fetch(`http://bitacoras.cecyt14.ipn.mx/api/examen/reporte-individual/${boleta}`);
         const data = await respuesta.json();
 
         if (!respuesta.ok) throw new Error(data.error || "No encontrado");
