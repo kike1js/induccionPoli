@@ -80,7 +80,7 @@
                 id_reactivo: 7,
                 materia: "Química",
                 pregunta: "Relaciona las propiedades de los materiales con sus respectivos ejemplos.",
-                imagen_pregunta: "../img/química/reactivo7.PNG",
+                imagen_pregunta: "../img/química/reactivo7.png",
                 opciones: [
                     { letra: "A", texto: "1ab, 2ce" },
                     { letra: "B", texto: "1ae, 2cd" },
@@ -92,7 +92,7 @@
                 id_reactivo: 8,
                 materia: "Química",
                 pregunta: "¿Qué características corresponden a los neutrones?",
-                imagen_pregunta: "../img/química/reactivo8.PNG",
+                imagen_pregunta: "../img/química/reactivo8.png",
                 opciones: [
                     { letra: "A", texto: "1, 2, 3" },
                     { letra: "B", texto: "1, 4, 5" },
@@ -128,7 +128,7 @@
                 id_reactivo: 11,
                 materia: "Química",
                 pregunta: "Relaciona el cambio de estado de agregación con el ejemplo.",
-                imagen_pregunta: "../img/química/reactivo11.PNG",
+                imagen_pregunta: "../img/química/reactivo11.png",
                 opciones: [
                     { letra: "A", texto: "1a, 2c, 3d" },
                     { letra: "B", texto: "1b, 2d, 3c" },
@@ -140,7 +140,7 @@
                 id_reactivo: 12,
                 materia: "Química",
                 pregunta: "Utilizando la siguiente ecuación, relaciona el agente redox con su ejemplo correspondiente.",
-                imagen_pregunta: "../img/química/reactivo12.PNG",
+                imagen_pregunta: "../img/química/reactivo12.png",
                 opciones: [
                     { letra: "A", texto: "1a, 2d" },
                     { letra: "B", texto: "1b, 2a" },
@@ -152,7 +152,7 @@
                 id_reactivo: 13,
                 materia: "Biología",
                 pregunta: "Elige las enfermedades de trasmisión sexual de origen viral.",
-                imagen_pregunta: "../img/biología/reactivo13.PNG",
+                imagen_pregunta: "../img/biología/reactivo13.png",
                 opciones: [
                     { letra: "A", texto: "1, 2, 3" },
                     { letra: "B", texto: "1, 4, 6" },
@@ -164,7 +164,7 @@
                 id_reactivo: 14,
                 materia: "Biología",
                 pregunta: "Ordena los reinos del menos complejo al más complejo",
-                imagen_pregunta: "../img/biología/reactivo14.PNG",
+                imagen_pregunta: "../img/biología/reactivo14.png",
                 opciones: [
                     { letra: "A", texto: "1, 4, 3, 2" },
                     { letra: "B", texto: "2, 3, 1, 4" },
@@ -188,7 +188,7 @@
                 id_reactivo: 16,
                 materia: "Biología",
                 pregunta: "Relaciona el órgano sexual masculino con la función que realiza.",
-                imagen_pregunta: "../img/biología/reactivo16.PNG",
+                imagen_pregunta: "../img/biología/reactivo16.png",
                 opciones: [
                     { letra: "A", texto: "1a, 2d, 3c, 4b" },
                     { letra: "B", texto: "1b, 2c, 3a, 4d" },
@@ -224,7 +224,7 @@
                 id_reactivo: 19,
                 materia: "Biología",
                 pregunta: "Relaciona las características de los seres vivos con su función.",
-                imagen_pregunta: "../img/biología/reactivo19.PNG",
+                imagen_pregunta: "../img/biología/reactivo19.png",
                 opciones: [
                     { letra: "A", texto: "1a, 2d, 3b, 4c" },
                     { letra: "B", texto: "1b, 2d, 3c, 4e" },
@@ -236,7 +236,7 @@
                 id_reactivo: 20,
                 materia: "Biología",
                 pregunta: "Ordena de la más pequeña a la más grande las siguientes estructuras genéticas.",
-                imagen_pregunta: "../img/biología/reactivo20.PNG",
+                imagen_pregunta: "../img/biología/reactivo20.png",
                 opciones: [
                     { letra: "A", texto: "1, 2, 4, 3" },
                     { letra: "B", texto: "1, 4, 3, 2" },
@@ -248,7 +248,7 @@
                 id_reactivo: 21,
                 materia: "Biología",
                 pregunta: "Relaciona a los científicos con su aportación.",
-                imagen_pregunta: "../img/biología/reactivo21.PNG",
+                imagen_pregunta: "../img/biología/reactivo21.png",
                 opciones: [
                     { letra: "A", texto: "1b, 2d, 3a" },
                     { letra: "B", texto: "1c, 2b, 3a" },
@@ -260,7 +260,7 @@
                 id_reactivo: 22,
                 materia: "Biología",
                 pregunta: "Selecciona los organelos exclusivos de la célula vegetal.",
-                imagen_pregunta: "../img/biología/reactivo22.PNG",
+                imagen_pregunta: "../img/biología/reactivo22.png",
                 opciones: [
                     { letra: "A", texto: "1, 3, 5" },
                     { letra: "B", texto: "2, 4, 6" },

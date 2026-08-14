@@ -394,7 +394,7 @@ const reactivosSociales = [
         requiere_lectura: false,
         texto_lectura: null,
         pregunta: "¿Qué tipo de texto es?",
-        imagen_pregunta: "../img/español/reactivos19y20.png",
+        imagen_pregunta: "../img/español/reactivos19y20.jpg",
         opciones: [
             { letra: "A", texto: "Científico" },
             { letra: "B", texto: "Publicitario" },
@@ -408,7 +408,7 @@ const reactivosSociales = [
         requiere_lectura: false,
         texto_lectura: null,
         pregunta: "¿Cuál es la función del texto?",
-        imagen_pregunta: "../img/español/reactivos19y20.png",
+        imagen_pregunta: "../img/español/reactivos19y20.jpg",
         opciones: [
             { letra: "A", texto: "Describir un producto o servicio de manera clara" },
             { letra: "B", texto: "Exponer lo que pensamos sobre algo" },

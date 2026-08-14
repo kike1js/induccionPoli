@@ -56,7 +56,7 @@ const reactivosExactos = [
         id_reactivo: 5,
         materia: "Razonamiento Matemático",
         pregunta: "Relaciona las figuras planas con la fórmula para obtener su área:",
-        imagen_pregunta: "../img/razonamiento Matemático/reactivo5.PNG",
+        imagen_pregunta: "../img/razonamiento Matemático/reactivo5.png",
         opciones: [
             { letra: "A", texto: "1c, 2a, 3b, 4d" },
             { letra: "B", texto: "1d, 2b, 3c, 4a" },
@@ -92,7 +92,7 @@ const reactivosExactos = [
         id_reactivo: 8,
         materia: "Razonamiento Matemático",
         pregunta: "Relaciona la variable x, y, z con el número de cuadrados que contienen algunos de los términos de la siguiente sucesión.",
-        imagen_pregunta: "../img/razonamiento Matemático/reactivo8.PNG",
+        imagen_pregunta: "../img/razonamiento Matemático/reactivo8.png",
         opciones: [
             { letra: "A", texto: "1𝑏, 2𝑐, 3𝑎" },
             { letra: "B", texto: "1𝑏, 2𝑎, 3𝑑" },
@@ -128,7 +128,7 @@ const reactivosExactos = [
         id_reactivo: 11,
         materia: "Razonamiento Matemático",
         pregunta: "Relaciona los resultados con su fracción equivalente.",
-        imagen_pregunta: "../img/razonamiento Matemático/reactivo11.PNG",
+        imagen_pregunta: "../img/razonamiento Matemático/reactivo11.png",
         opciones: [
             { letra: "A", texto: "1a, 2b, 3c, 4d" },
             { letra: "B", texto: "1d, 2a, 3c, 4b" },
@@ -356,7 +356,7 @@ const reactivosExactos = [
         id_reactivo: 30,
         materia: "Física",
         pregunta: "Dos cargas, q1 = 1.5 x 10<sup>-6</sup> C y q2 = -2 x 10<sup>-6</sup> C, están separadas como se muestra en la figura. ¿Cuál es la fuerza electrostática entre ellas?",
-        imagen_pregunta: "../img/fisica/reactivo30.png",
+        imagen_pregunta: "../img/fisica/rectivo30.jpg",
         opciones: [
             { letra: "A", texto: "9.34 x 10<sup>-3</sup> N", },
             { letra: "B", texto: "−9.34 x 10<sup>3</sup> N", },

@@ -1,9 +1,33 @@
-# 2. Servidor Backend (Node.js)
+version: '3'
+
+services:
+  # 1. Servidor Web para tu Frontend (HTML/CSS/JS)
+  frontend-induccion:
+    image: nginx:alpine
+    ports:
+      - "8082:80" 
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - backend-induccion
+
+  # 2. Servidor Backend (Node.js)
   backend-induccion:
     build: ./backend
     ports:
       - "3002:3002"
     env_file:
-      - ./backend/.env # <-- Leemos el archivo .env
+      - ./backend/.env
     depends_on:
       - mongo-induccion
+
+  # 3. Base de Datos (MongoDB)
+  mongo-induccion:
+    image: mongo:latest
+    ports:
+      - "27019:27017" 
+    volumes:
+      - mongo_data_induccion:/data/db
+
+volumes:
+  mongo_data_induccion:
