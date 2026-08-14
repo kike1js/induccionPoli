@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instrucciones Ciencias Experimentales | PoliAprende</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="js/sesion.js" defer></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ipn: {
+                            guinda: '#6c1d45',
+                            guindaHover: '#8a2558',
+                            oro: '#e8b849'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .instruction-number {
+            min-width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #6c1d45;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body class="text-gray-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <header class="bg-ipn-guinda text-white shadow-md relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-graduation-cap text-2xl text-ipn-oro"></i>
+                <h1 class="text-xl font-bold tracking-wide">Inducción Politecnica <span class="font-normal text-gray-300">| Simulador de Inducción</span></h1>
+            </div>
+            <a href="../inicio.html" class="text-sm hover:text-ipn-oro transition-colors flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> Volver al Menú
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4 py-8">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-4xl w-full border border-gray-200">
+            
+            <div class="bg-gray-50 border-b border-gray-200 px-8 py-6 text-center">
+                <h2 class="text-2xl md:text-3xl font-extrabold text-ipn-guinda uppercase tracking-wide">
+                    <i class="fas fa-clipboard-list mr-2"></i> Instrucciones del Examen
+                </h2>
+                <p class="text-gray-500 mt-2 font-medium text-lg">Área: Ciencias Experimentales</p>
+            </div>
+
+            <div class="px-8 py-6 md:px-12 md:py-8 space-y-8">
+                
+                <section>
+                    <h3 class="text-xl font-bold text-gray-800 border-b-2 border-ipn-oro pb-2 mb-4 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-ipn-guinda"></i> Información sobre el examen
+                    </h3>
+                    <p class="text-gray-600 leading-relaxed mb-4 text-justify">
+                        Este examen consta de <strong>36 reactivos</strong> de opción múltiple, formados por las materias de <strong>Química, Biología y Geografía</strong>. Tienes un tiempo máximo de <strong>1 hora (60 minutos)</strong> para concluirlo.
+                    </p>
+                    <p class="text-gray-600 leading-relaxed text-justify">
+                        Para cada <strong>REACTIVO</strong> se ofrecen cuatro opciones de respuesta marcadas por las letras A, B, C, D, de las cuales <strong>sólo una es correcta</strong>. En la parte superior podrás ver la cantidad de reactivos contenidos en el examen, eres libre de contestar en el orden que tú desees y puedes regresar a un reactivo previo si lo requieres. El cronómetro te ayudará a contabilizar el tiempo con el que cuentas.
+                    </p>
+                </section>
+
+                <section>
+                    <h3 class="text-xl font-bold text-gray-800 border-b-2 border-ipn-oro pb-2 mb-4 flex items-center gap-2">
+                        <i class="fas fa-mouse-pointer text-ipn-guinda"></i> Navegación en la plataforma
+                    </h3>
+                    <ul class="space-y-4 text-gray-600">
+                        <li class="flex items-start">
+                            <span class="instruction-number">1</span>
+                            <span>Una vez que inicies el examen, el cronómetro comenzará a contar el tiempo.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="instruction-number">2</span>
+                            <span>Debes revisar cada reactivo. Si no contestas alguno de ellos, tienes la oportunidad de volver a él y responderlo antes de que finalice el tiempo.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="instruction-number">3</span>
+                            <span>Puedes navegar por las páginas del examen seleccionando los botones <strong>“ANTERIOR”</strong> y <strong>“SIGUIENTE”</strong>.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="instruction-number">4</span>
+                            <span>Si tienes duda en un algún reactivo, puedes volver a revisarlo más tarde utilizando el botón de <strong>“MARCAR PARA REVISAR”</strong>. Así podrás volver a él para cambiar o añadir la respuesta, si fuera necesario.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="instruction-number">5</span>
+                            <span>Si tienes problemas de conexión o de energía electrica el sistema te permite guardar tu progreso en el botón de <strong>GUARDAR PROGRESO</strong>. Así podrás tender un respaldo y poder finalizar tu examen.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="instruction-number">6</span>
+                            <span>Al terminar el examen, si estás listo para enviar tus respuestas, haz clic en <strong>“TERMINAR SECCIÓN”</strong>.</span>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="bg-red-50 p-5 rounded-lg border border-red-200">
+                    <h3 class="text-lg font-bold text-red-700 mb-2 flex items-center gap-2">
+                        <i class="fas fa-shield-alt"></i> Reglas de Seguridad Estricta
+                    </h3>
+                    <p class="text-red-600 text-sm leading-relaxed text-justify mb-2">
+                        El simulador se ejecutará en <strong>pantalla completa</strong> y cuenta con un sistema de monitoreo inteligente. Queda estrictamente prohibido:
+                    </p>
+                    <ul class="list-disc list-inside text-red-600 text-sm ml-4 space-y-1 mb-3 font-medium">
+                        <li>Cambiar de pestaña en el navegador.</li>
+                        <li>Minimizar la ventana o abrir otras aplicaciones.</li>
+                        <li>Salir del modo de pantalla completa.</li>
+                    </ul>
+                    <p class="text-red-700 text-sm font-bold bg-red-100 p-2 rounded text-center">
+                        <i class="fas fa-exclamation-triangle"></i> Cuentas con un máximo de 3 advertencias. Si se acumulan, tu examen será CANCELADO automáticamente con calificación de CERO.
+                    </p>
+                </section>
+
+                <div class="text-center pt-4">
+                    <p class="text-lg font-semibold text-gray-800 italic">
+                        “Entendidas las instrucciones procede a contestar el examen, ¡mucho éxito!”
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-gray-100 px-8 py-6 text-center border-t border-gray-200">
+                <button id="btnComenzar" class="w-full md:w-auto px-10 py-4 bg-ipn-guinda hover:bg-ipn-guindaHover text-white font-bold text-lg rounded-lg shadow-lg transition-transform transform hover:-translate-y-1 hover:shadow-xl flex items-center justify-center gap-3 mx-auto">
+                    <i class="fas fa-play-circle text-xl"></i>
+                    <span>COMENZAR PRUEBA</span>
+                </button>
+                <p id="loadingMsg" class="text-sm text-gray-500 mt-3 hidden animate-pulse">
+                    <i class="fas fa-spinner fa-spin"></i> Verificando entorno seguro...
+                </p>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnComenzar = document.getElementById('btnComenzar');
+            const loadingMsg = document.getElementById('loadingMsg');
+
+            btnComenzar.addEventListener('click', async () => {
+                // 1. Cambiar estado visual del botón
+                btnComenzar.disabled = true;
+                btnComenzar.classList.add('opacity-75', 'cursor-not-allowed');
+                btnComenzar.innerHTML = '<i class="fas fa-spinner fa-spin text-xl"></i><span> VERIFICANDO SESIÓN...</span>';
+                loadingMsg.classList.remove('hidden');
+
+                const boleta = localStorage.getItem("boleta_activa") || localStorage.getItem("poliBoleta");
+
+                if (boleta) {
+                    try {
+                        // 2. Preguntar a MongoDB si hay un examen a medias
+                        // RUTA A EXPERIMENTALES
+                        const respuesta = await fetch(`http://148.204.239.124:3002/api/examen/estado-vivo/${boleta}/experimentales`);
+                        const estadoGuardado = await respuesta.json();
+
+                        // 3. Validar el estado
+                        if (estadoGuardado && estadoGuardado.estado === 'finalizado') {
+                            
+                            // Restauramos el botón a su estado normal por si se queda en la pantalla
+                            btnComenzar.disabled = false;
+                            btnComenzar.classList.remove('opacity-75', 'cursor-not-allowed');
+                            btnComenzar.innerHTML = '<i class="fas fa-play-circle text-xl"></i><span>COMENZAR PRUEBA</span>';
+                            loadingMsg.classList.add('hidden');
+
+                            // ALERTA ELEGANTE CON SWEETALERT2
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Prueba Completada!',
+                                text: 'Tu prueba de Ciencias Experimentales ya ha finalizado, gracias por participar. Completa exámenes que tengas pendientes y mantente atento a actualizaciones.',
+                                confirmButtonColor: '#6c1d45',
+                                confirmButtonText: '<i class="fas fa-home"></i> Ir al Menú Principal',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = '../inicio.html';
+                                }
+                            });
+
+                            return; // Abortamos, no entra al examen
+                        }
+
+                        if (estadoGuardado && estadoGuardado.estado === 'en_curso') {
+                            // 4. RESTAURACIÓN MÁGICA: Inyectar datos de MongoDB al localStorage de EXPERIMENTALES
+                            localStorage.setItem('tiempo_experimental', estadoGuardado.tiempoRestante);
+                            localStorage.setItem('advertencias_experimentales', estadoGuardado.advertencias);
+                            localStorage.setItem('indice_experimental', estadoGuardado.indiceTemporal);
+                            localStorage.setItem('respuestas_experimentales', JSON.stringify(estadoGuardado.respuestasTemporales || {}));
+                            localStorage.setItem('marcadas_experimentales', JSON.stringify(estadoGuardado.marcadasTemporales || {}));
+                            console.log("Progreso de experimentales restaurado desde la nube");
+                        } else {
+                            // Si el estado es 'no_iniciado' o nulo, limpiamos por si acaso para que empiece en blanco
+                            localStorage.removeItem('tiempo_experimental');
+                            localStorage.removeItem('advertencias_experimentales');
+                            localStorage.removeItem('indice_experimental');
+                            localStorage.removeItem('respuestas_experimentales');
+                            localStorage.removeItem('marcadas_experimentales');
+                        }
+                    } catch (error) {
+                        console.error("No se pudo verificar el estado en vivo. Se iniciará normalmente.", error);
+                    }
+                }
+
+                // 5. Solicitar Pantalla Completa
+                try {
+                    const docEl = document.documentElement;
+                    if (docEl.requestFullscreen) await docEl.requestFullscreen();
+                    else if (docEl.webkitRequestFullscreen) await docEl.webkitRequestFullscreen();
+                } catch (err) {
+                    console.warn("Fullscreen ignorado/bloqueado");
+                }
+
+                // 6. Redirigir al examen real
+                setTimeout(() => {
+                    // RUTA AL HTML DE EXPERIMENTALES
+                    window.location.href = 'examen_experimental.html'; 
+                }, 800);
+            });
+        });
+    </script>
+</body>
+</html>

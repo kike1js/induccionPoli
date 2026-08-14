@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inducción - Inicio</title>
+  
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Tailwind CSS para un diseño rápido, responsivo y moderno -->
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ipnGuinda: '#6c1d45',
+            ipnGuindaClaro: '#8a2558',
+          }
+        }
+      }
+    }
+  </script>
+
+
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+  <!-- Header Institucional -->
+  <header class="bg-ipnGuinda text-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3">
+      <div class="logo-barra">
+        <!-- Logo y Título -->
+        <a href="#" class="flex items-center gap-3 hover:text-gray-200 transition">
+          <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-ipnGuinda font-bold text-xl">
+            IP
+          </div>
+          <span class="text-2xl font-bold tracking-wide">Inducción Politecnica</span>
+        </a>
+        
+        <!-- Navegación -->
+        <nav class="nav text-sm font-medium">
+          <a href="inicio.html" class="hover:text-gray-300 transition">Inicio</a>
+          <a href="resultados.html" class="hover:text-gray-300 transition">Mis Exámenes</a>
+          <button id="logoutBtn" onclick="window.cerrarSesion()" class="bg-white text-ipnGuinda px-4 py-2 rounded-md hover:bg-gray-200 transition ml-2 font-bold shadow-sm">
+            Cerrar Sesión
+        </button>
+          
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Bienvenido a tu Inducción Politécnica</h1>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+        Alumno de nuevo ingreso del CECyT 14, esta herramienta está diseñada para medir tus conocimientos. 
+        Ahora que ingresaste a nuestra institución, nos interesa seguir de cerca tu progreso y apoyarte con una educación de calidad.  
+      </p>
+    </div>
+    
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-ipnGuinda inline-block pb-2">Áreas de Evaluación</h2>
+    
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <a href="area_social/aviso_social.html" class="materia-card bg-white rounded-xl overflow-hidden shadow border border-gray-200 block group">
+        <div class="h-32 bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition">
+          <svg class="w-16 h-16 text-blue-600 transform group-hover:scale-110 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+        </div>
+        <div class="p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-2 group-hover:text-ipnGuinda transition">Ciencias Sociales</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            Accede a preguntas sobre habilidad del razonamiento verbal, español, historia y formación cívica y ética.
+          </p>
+        </div>
+      </a>
+
+      <a href="area_exacta/aviso_exacto.html" class="materia-card bg-white rounded-xl overflow-hidden shadow border border-gray-200 block group">
+        <div class="h-32 bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition">
+          <svg class="w-16 h-16 text-rose-600 transform group-hover:scale-110 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <div class="p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-2 group-hover:text-ipnGuinda transition">Ciencias Exactas</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            Toma este reto evaluativo sobre razonamiento matemático, matemáticas y física. 
+          </p>
+        </div>
+      </a>
+
+      <a href="area_experimental/aviso_experimental.html" class="materia-card bg-white rounded-xl overflow-hidden shadow border border-gray-200 block group">
+        <div class="h-32 bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition">
+          <svg class="w-16 h-16 text-emerald-600 transform group-hover:scale-110 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+          </svg>
+        </div>
+        <div class="p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-2 group-hover:text-ipnGuinda transition">Ciencias Experimentales</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            Mide tus conocimientos analíticos en áreas como biología, química y geografía.
+          </p>
+        </div>
+      </a>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white mt-auto">
+    <div class="container mx-auto px-4 py-6 text-center text-sm text-gray-400">
+      <p>&copy; 2026 Inducción Politécnica | CECyT 14 - IPN | Derechos Reservados |
+      </p>
+    </div>
+  </footer>
+    <script src="js/sesion.js"></script>
+    <script src="js/js.js"></script>
+    
+
+</body>
+</html>

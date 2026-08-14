@@ -1,0 +1,90 @@
+/* PROTECCIÓN ANTI-COPIA */
+        #texto-pregunta, 
+        #contenedor-opciones {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+        }
+
+        /* ESTILOS DE LAS OPCIONES */
+        .opcion-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .opcion-btn:active {
+            transform: scale(0.98);
+        }
+
+        .opcion-seleccionada {
+            background-color: #fdf2f8 !important; 
+            border-color: #6c1d45 !important; 
+            box-shadow: 0 4px 6px -1px rgba(108, 29, 69, 0.1);
+        }
+
+        .opcion-seleccionada div {
+            background-color: #6c1d45;
+            color: white !important;
+            border-color: #6c1d45 !important;
+        }
+
+        /* SCROLLBAR PERSONALIZADA */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        /* MODAL DE IMÁGENES */
+        .imagen-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            cursor: zoom-out;
+        }
+
+        .imagen-fullscreen img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* TRAMPA DE SCROLL */
+        #panel-mapa > div.overflow-y-auto,
+        section.overflow-y-auto {
+            overflow-y: scroll !important;
+            -webkit-overflow-scrolling: touch !important; 
+        }
+
+        @media (max-width: 1024px) {
+            #panel-mapa {
+                max-height: 100%;
+            }
+            #panel-mapa > div.overflow-y-auto {
+                padding-bottom: 90px !important; 
+            }
+        }

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin PoliAprende | Inicio</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ipnGuinda: '#6c1d45',
+            ipnGuindaClaro: '#8a2558',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .logo-barra {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        position: relative;
+    }
+    .menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.8rem;
+        cursor: pointer;
+    }
+    .nav {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+    }
+    @media (max-width: 768px) {
+        .menu-toggle { display: block; }
+        .nav {
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: #6c1d45;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .nav.active {
+            display: flex;
+        }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+  <header class="bg-ipnGuinda text-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3">
+      <div class="logo-barra">
+        <a href="#" class="flex items-center gap-3 hover:text-gray-200 transition">
+          <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-ipnGuinda font-bold text-xl">
+            IP
+          </div>
+          <span class="text-2xl font-bold tracking-wide">Inducción Politecnica</span>
+        </a>
+        
+        <nav class="nav text-sm font-medium">
+          <a href="inicio_admin.html" class="hover:text-gray-300 transition">Inicio</a>
+          <button id="logoutBtn" onclick="window.cerrarSesion()" class="bg-white text-ipnGuinda px-4 py-2 rounded-md hover:bg-gray-200 transition md:ml-2 font-bold shadow-sm w-full md:w-auto mt-2 md:mt-0">
+            Cerrar Sesión
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow container mx-auto px-4 py-12">
+    
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Bienvenido al Centro de Control</h1>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+        Administradores de la UDI, esta herramienta está diseñada para gestionar a los aspirantes y analizar las estadísticas globales del Simulador de Examen de Inducción.
+      </p>
+    </div>
+
+    <div class="max-w-5xl mx-auto">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-ipnGuinda inline-block pb-2">Gestión y Reportes</h2>
+        
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <a href="estadisticas_admin.html" class="materia-card bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200 block group hover:-translate-y-1 transform transition duration-300">
+            <div class="h-32 bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition">
+            <svg class="w-16 h-16 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            </div>
+            <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition">Estadísticas de Exámenes</h3>
+            <p class="text-gray-600 text-sm leading-relaxed">
+                Accede al panel de control para generar reportes, promedios por área y analizar el rendimiento general de los alumnos en los exámenes de simulación.
+            </p>
+            </div>
+        </a>
+
+        <a href="admin_usuarios.html" class="materia-card bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200 block group hover:-translate-y-1 transform transition duration-300">
+            <div class="h-32 bg-green-50 flex items-center justify-center group-hover:bg-green-100 transition">
+            <svg class="w-16 h-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            </div>
+            <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition">Gestión de Aspirantes</h3>
+            <p class="text-gray-600 text-sm leading-relaxed">
+                Panel de control de usuarios. Realiza altas manuales, carga masiva mediante archivos CSV, bajas y actualizaciones de contraseñas. 
+            </p>
+            </div>
+        </a>
+        </section>
+    </div>
+
+  </main>
+
+  <footer class="bg-gray-800 text-white mt-auto">
+    <div class="container mx-auto px-4 py-6 text-center text-sm text-gray-400">
+      <p>&copy; 2026 PoliAprende | CECyT 14 - IPN | Panel Administrativo</p>
+    </div>
+  </footer>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script src="../js/sesion.js"></script>
+  <script src="../js/js.js"></script>
+    
+</body>
+</html>

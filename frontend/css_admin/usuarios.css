@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f3f4f6;
+}
+
+/* Animación para notificaciones (Toasts) */
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.toast-enter {
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+/* Scrollbar personalizado para la tabla */
+.tabla-contenedor::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+.tabla-contenedor::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+.tabla-contenedor::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+.tabla-contenedor::-webkit-scrollbar-thumb:hover {
+    background: #6c1d45;
+}

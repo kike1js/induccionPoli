@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estadísticas del Simulador </title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { ipnGuinda: '#6c1d45', ipnGuindaClaro: '#8a2558' } } }
+    }
+  </script>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+  <header class="bg-ipnGuinda text-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <a href="inicio_admin.html" class="flex items-center gap-3 hover:text-gray-200 transition">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-ipnGuinda font-bold text-xl">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <span class="text-xl font-bold tracking-wide">Inducción Politécnica <span class="font-normal">| Estadísticas</span></span>
+      </a>
+      <a href="inicio_admin.html" class="text-sm hover:text-yellow-400 transition">
+        <i class="fas fa-arrow-left mr-1"></i> Volver al Panel
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
+    
+    <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 mb-8">
+      <h2 class="text-2xl font-bold text-ipnGuinda mb-4"><i class="fas fa-calendar-alt mr-2"></i> Filtro de Búsqueda</h2>
+      <form id="formEstadisticas" class="flex flex-col md:flex-row gap-4 items-end">
+        <div class="w-full md:w-1/4">
+          <label class="block text-sm font-bold text-gray-700 mb-2">Fecha de Inicio</label>
+          <input type="date" id="fechaInicio" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50">
+        </div>
+        <div class="w-full md:w-1/4">
+          <label class="block text-sm font-bold text-gray-700 mb-2">Fecha de Corte</label>
+          <input type="date" id="fechaFin" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50">
+        </div>
+        <div class="w-full md:w-1/4">
+          <label class="block text-sm font-bold text-gray-700 mb-2">Grupo (Opcional)</label>
+          <input type="text" id="filtroGrupo" placeholder="Ej. 4IV15" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50 uppercase">
+        </div>
+
+        <div class="w-full md:w-1/4 flex gap-2">
+          <button type="submit" id="btnGenerar" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition shadow flex justify-center items-center gap-2">
+            <i class="fas fa-search"></i> Consultar
+          </button>
+          <button type="button" id="btnPDF" disabled class="w-full bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition shadow flex justify-center items-center gap-2 cursor-not-allowed">
+            <i class="fas fa-file-pdf"></i> PDF
+          </button>
+        </div>
+      </form>
+    </div>
+    
+    <div id="panelResultados" class="hidden">
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-2xl shadow border border-gray-200 text-center">
+          <div class="text-gray-500 text-sm font-bold mb-1 uppercase">Alumnos</div>
+          <div id="kpiAlumnos" class="text-3xl font-black text-ipnGuinda">0</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow border border-gray-200 text-center">
+          <div class="text-gray-500 text-sm font-bold mb-1 uppercase">Exámenes</div>
+          <div id="kpiExamenes" class="text-3xl font-black text-blue-600">0</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow border border-gray-200 text-center">
+          <div class="text-gray-500 text-sm font-bold mb-1 uppercase">Completaron</div>
+          <div id="kpiCompletos" class="text-3xl font-black text-green-600">0</div>
+        </div>
+        <div class="bg-red-50 p-6 rounded-2xl shadow border border-red-200 text-center relative overflow-hidden">
+          <div class="text-red-700 text-sm font-bold mb-1 uppercase z-10 relative">Exámenes Anulados</div>
+          <div id="kpiTramposos" class="text-3xl font-black text-red-600 z-10 relative">0</div>
+          <i class="fas fa-user-shield absolute -bottom-4 -right-4 text-red-100 text-6xl z-0"></i>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white p-6 rounded-2xl shadow border border-gray-200">
+          <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Promedios Generales (Base 10)</h3>
+          <ul class="space-y-4" id="listaPromedios">
+          </ul>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow border border-gray-200">
+          <h3 class="text-lg font-bold text-red-600 mb-4 border-b border-red-200 pb-2">
+            <i class="fas fa-exclamation-circle"></i> Focos Rojos (Materias más bajas)
+          </h3>
+          <ul class="space-y-3" id="listaDebiles">
+          </ul>
+        </div>
+      </div>
+
+    </div> <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 mt-4">
+      <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fas fa-user-graduate text-ipnGuinda mr-2"></i> Búsqueda Individual por Alumno</h2>
+      <form id="formIndividual" class="flex flex-col md:flex-row gap-4 items-end">
+        <div class="w-full md:w-1/2">
+          <label class="block text-sm font-bold text-gray-700 mb-2">Boleta del Estudiante</label>
+          <input type="number" id="inputBoleta" placeholder="Ej. 2025630152" required class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50">
+        </div>
+        <div class="w-full md:w-1/2 flex gap-2">
+          <button type="submit" id="btnBuscarAlumno" class="w-full bg-gray-800 hover:bg-black text-white font-bold py-3 px-4 rounded-lg transition shadow flex justify-center items-center gap-2">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+          <button type="button" id="btnPDFIndividual" disabled class="w-full bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition shadow flex justify-center items-center gap-2 cursor-not-allowed">
+            <i class="fas fa-file-pdf"></i> Acuse Alumno
+          </button>
+        </div>
+      </form>
+      
+      <div id="resIndividualUI" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+        <div>
+            <p class="font-bold text-green-800"><i class="fas fa-check-circle mr-1"></i> Alumno Encontrado</p>
+            <p class="text-sm text-green-700" id="txtAlumnoEncontrado">Boleta: --</p>
+        </div>
+        <i class="fas fa-user text-green-600 text-2xl opacity-50"></i>
+      </div>
+    </div>
+
+  </main>
+  
+  <script src="../js/sesion.js"></script>
+  <script src="../admin.js/estadisticas.js"></script>
+</body>
+</html>

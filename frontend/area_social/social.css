@@ -1,0 +1,122 @@
+/**
+ * ============================================================
+ * ARCHIVO: social.css (o examen.css)
+ * PROPÓSITO: Estilos específicos para el Simulador de Examen
+ * ============================================================
+ */
+
+/* ============================================================
+   1. PROTECCIÓN ANTI-COPIA (Seguridad Básica UI)
+   ============================================================ */
+/* Evita que el usuario seleccione el texto de la pregunta para copiarlo */
+#texto-pregunta, 
+#contenedor-opciones {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+/* El texto de la lectura SÍ se puede seleccionar para ayudar a leer */
+#texto-lectura-contenedor {
+    user-select: text;
+}
+
+/* ============================================================
+   2. ESTILOS DE LAS OPCIONES (PÍLDORAS DINÁMICAS)
+   ============================================================ */
+.opcion-btn {
+    position: relative;
+    overflow: hidden;
+    /* Efecto de rebote sutil */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.opcion-btn:active {
+    transform: scale(0.98);
+}
+
+/* Clase que aplicará JS cuando el usuario SELECCIONE una opción */
+.opcion-seleccionada {
+    background-color: #fdf2f8 !important; /* Fondo rosado/guinda clarito */
+    border-color: #6c1d45 !important; /* Borde Guinda */
+    box-shadow: 0 4px 6px -1px rgba(108, 29, 69, 0.1);
+}
+
+.opcion-seleccionada div {
+    background-color: #6c1d45;
+    color: white !important;
+    border-color: #6c1d45 !important;
+}
+
+/* ============================================================
+   3. SCROLLBAR PERSONALIZADA (Para Lectura y Mapa)
+   ============================================================ */
+/* Hace que el scroll no se vea tosco y antiguo */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* Gris suave */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; /* Gris más oscuro al pasar el mouse */
+}
+
+/* ============================================================
+   4. MODAL DE IMÁGENES (Lightbox Effect)
+   ============================================================ */
+.imagen-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    cursor: zoom-out;
+}
+
+.imagen-fullscreen img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================================
+   5. TRAMPA DE SCROLL (Móviles y Tablets) - ¡NUEVO!
+   ============================================================ */
+/* Fuerza la barra de desplazamiento y activa el scroll suave en móviles */
+#texto-lectura-contenedor,
+#panel-mapa > div.overflow-y-auto,
+section.overflow-y-auto {
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important; 
+}
+
+/* Garantiza que los paneles flotantes en móvil no midan más que la pantalla
+   y deja espacio abajo para que los botones flotantes no tapen el texto */
+@media (max-width: 1024px) {
+    #panel-lectura, #panel-mapa {
+        max-height: 100%;
+    }
+    
+    #texto-lectura-contenedor,
+    #panel-mapa > div.overflow-y-auto {
+        padding-bottom: 90px !important; 
+    }
+}

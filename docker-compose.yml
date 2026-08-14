@@ -1,0 +1,9 @@
+# 2. Servidor Backend (Node.js)
+  backend-induccion:
+    build: ./backend
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./backend/.env # <-- Leemos el archivo .env
+    depends_on:
+      - mongo-induccion

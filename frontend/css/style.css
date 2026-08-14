@@ -1,0 +1,143 @@
+/**
+ * ============================================================
+ *  ARCHIVO: style.css
+ *  PROPÓSITO: Todos los estilos personalizados de la aplicación
+ *  DEPENDENCIAS: Tailwind CSS (cargado desde CDN en el HTML)
+ * ============================================================
+ */
+
+/* ============================================================
+   1. ESTILOS BASE
+   ============================================================ */
+
+body {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ============================================================
+   2. HEADER Y NAVEGACIÓN
+   ============================================================ */
+
+.logo-barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.nav {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+/* ============================================================
+   3. MENÚ HAMBURGUESA (Responsive)
+   ============================================================ */
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+/* ============================================================
+   4. RESPONSIVE - MEDIA QUERIES
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+  
+  .nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #6c1d45;
+    padding: 1rem 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+  }
+
+  .nav.active {
+    display: flex;
+  }
+
+  .nav a, .nav button {
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem 0;
+  }
+}
+
+/* ============================================================
+   5. TARJETAS DE MATERIAS (Animaciones)
+   ============================================================ */
+
+.materia-card {
+  transition: all 0.3s ease;
+}
+
+.materia-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(108, 29, 69, 0.2);
+  border-color: #6c1d45;
+}
+
+/* ============================================================
+   6. TOAST - Notificaciones flotantes
+   ============================================================ */
+
+#toast {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 8px;
+  padding: 16px;
+  position: fixed;
+  z-index: 100;
+  left: 50%;
+  bottom: 30px;
+  font-size: 17px;
+  opacity: 0;
+  transition: opacity 0.5s, bottom 0.5s;
+}
+
+#toast.show {
+  visibility: visible;
+  opacity: 1;
+  bottom: 50px;
+}
+
+/* ============================================================
+   7. SCROLLBAR PERSONALIZADA
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6c1d45;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8a2558;
+}

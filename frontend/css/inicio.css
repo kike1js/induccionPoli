@@ -1,0 +1,103 @@
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+    .login-box {
+      background: white;
+      padding: 3rem;
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+    }
+    .welcome-text {
+      color: #6b7280;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+    }
+    h1 {
+      color: #6c1d45; /* Guinda IPN */
+      font-size: 1.875rem;
+      font-weight: 900;
+      margin-top: 0.5rem;
+      margin-bottom: 0.25rem;
+      line-height: 1.2;
+    }
+    .subtitle {
+      color: #9ca3af;
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+    .input-group {
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #6c1d45;
+      box-shadow: 0 0 0 3px rgba(108, 29, 69, 0.1);
+    }
+    #loginBtn {
+      width: 100%;
+      padding: 1rem;
+      background-color: #6c1d45;
+      color: white;
+      font-weight: 700;
+      font-size: 1.125rem;
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+    }
+    #loginBtn:hover {
+      background-color: #8a2558;
+      transform: translateY(-2px);
+    }
+    #loginBtn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    #message {
+      margin-top: 1.5rem;
+      font-weight: 500;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      display: none;
+    }
+    .msg-error {
+      background-color: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #f87171;
+      display: block !important;
+    }
+    .msg-success {
+      background-color: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #86efac;
+      display: block !important;
+    }
+    .msg-info {
+      background-color: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #93c5fd;
+      display: block !important;
+    }
