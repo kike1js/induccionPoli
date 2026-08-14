@@ -15,7 +15,7 @@ const app = express();
 // 1. CONFIGURACIÓN Y MIDDLEWARES (SIEMPRE ARRIBA)
 // ==========================================
 const PORT = process.env.PORT || 3002;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27019/induccion_db';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27019/induccion_db';
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Vital para leer req.body y procesar CSV pesados
