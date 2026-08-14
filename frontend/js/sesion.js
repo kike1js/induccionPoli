@@ -24,7 +24,7 @@
     if (boletaActiva && sessionToken) {
         try {
             // Petición de verificación basada en BOLETA
-            const respuesta = await fetch('http://bitacoras.cecyt14.ipn.mx/api/examen/verify', {
+            const respuesta = await fetch('http://148.204.239.124:3002/api/examen/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ boleta: boletaActiva, token: sessionToken })
@@ -84,7 +84,7 @@
 
             if (areaEnCurso && boletaActual) {
                 console.warn(`[Seguridad] Detectado intento de abandono en: ${areaEnCurso}. Castigando...`);
-                await fetch('http://bitacoras.cecyt14.ipn.mx/api/examen/entregar', {
+                await fetch('http://148.204.239.124:3002/api/examen/entregar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -101,7 +101,7 @@
 
             // AVISAR AL BACKEND EL CIERRE SEGURO
             if (boletaActual) {
-                await fetch('http://bitacoras.cecyt14.ipn.mx/api/examen/logout', {
+                await fetch('http://148.204.239.124:3002/api/examen/logout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ boleta: boletaActual })
