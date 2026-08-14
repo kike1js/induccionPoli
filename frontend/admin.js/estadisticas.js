@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if(fechaFin) urlStats += `fechaFin=${fechaFin}`;
             const resStats = await fetch(urlStats);
             
-            // 🚨 CORRECCIÓN AQUÍ: Quitamos el "const" para actualizar la variable global
             datosStats = await resStats.json(); 
 
             if (!resStats.ok) throw new Error(datosStats.error || "Error en estadísticas");
@@ -46,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if(inputGrupo) urlProfesor += `grupo=${inputGrupo}`;
             const resProfesor = await fetch(urlProfesor);
             
-            // 🚨 CORRECCIÓN AQUÍ: Quitamos el "const" también
             datosProfesor = await resProfesor.json(); 
 
             if (!resProfesor.ok) throw new Error(datosProfesor.error || "Error en reporte de profesor");
@@ -73,12 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('panelResultados').classList.remove('hidden');
 
         // KPIs (Mezclamos datos de ambas peticiones)
-        // usamos prof.totalAlumnosConsultados para reflejar el filtro de grupo
         document.getElementById('kpiAlumnos').innerText = prof.totalAlumnosConsultados; 
         document.getElementById('kpiExamenes').innerText = stats.participacion.totalExamenes;
         document.getElementById('kpiCompletos').innerText = stats.participacion.alumnosCompletaronTodo;
-        
-        // NUEVO KPI TRAMPOSOS
         document.getElementById('kpiTramposos').innerText = prof.totalTramposos; 
 
         // Promedios
@@ -89,13 +84,14 @@ document.addEventListener('DOMContentLoaded', () => {
             <li class="flex justify-between items-center bg-gray-50 p-3 rounded"><span class="font-semibold text-gray-700">Cs. Experimentales</span> <span class="font-black text-ipnGuinda">${stats.promedios.experimentales}</span></li>
         `;
 
-        // Puntos débiles
+        // Puntos débiles para la UI global (solo mostramos las 5 peores aquí para no saturar la pantalla)
         const listaD = document.getElementById('listaDebiles');
         listaD.innerHTML = '';
         if(stats.puntosDebiles.length === 0) {
             listaD.innerHTML = '<li class="text-gray-500 italic">No hay datos suficientes.</li>';
         } else {
-            stats.puntosDebiles.forEach((item, index) => {
+            const soloDebilesUI = [...stats.puntosDebiles].sort((a, b) => a.porcentaje - b.porcentaje).slice(0, 5);
+            soloDebilesUI.forEach((item, index) => {
                 listaD.innerHTML += `
                     <li class="flex justify-between items-center">
                         <span class="text-gray-700 text-sm"><span class="font-bold text-red-500 mr-2">#${index+1}</span> ${item.materia}</span>
@@ -111,10 +107,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const ventanaImpresion = window.open('', '', 'height=800,width=800');
         
-        let filasPuntosDebiles = '';
-        datosStats.puntosDebiles.forEach((m, i) => {
-            filasPuntosDebiles += `<tr><td>${i+1}</td><td>${m.materia}</td><td style="color:red; font-weight:bold;">${m.porcentaje}%</td></tr>`;
-        });
+        // --- CÁLCULO DE FORTALEZAS Y DEBILIDADES GLOBALES ---
+        const filasPuntosFuertesGlobal = [...datosStats.puntosDebiles]
+            .sort((a, b) => b.porcentaje - a.porcentaje)
+            .slice(0, 5)
+            .map((m, i) => `<tr><td>${i+1}</td><td>${m.materia}</td><td style="color:green; font-weight:bold;">${m.porcentaje}%</td></tr>`)
+            .join('');
+
+        const filasPuntosDebilesGlobal = [...datosStats.puntosDebiles]
+            .sort((a, b) => a.porcentaje - b.porcentaje)
+            .slice(0, 5)
+            .map((m, i) => `<tr><td>${i+1}</td><td>${m.materia}</td><td style="color:red; font-weight:bold;">${m.porcentaje}%</td></tr>`)
+            .join('');
 
         // ==========================================
         // NUEVA TABLA: LISTA NEGRA DE TRAMPOSOS
@@ -185,13 +189,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     <tr><td>Ciencias Experimentales</td><td>${datosStats.promedios.experimentales}</td></tr>
                 </table>
 
-                <h2 class="section-title" style="color: #d32f2f;">3. Focos Rojos (Materias de Bajo Rendimiento)</h2>
+                <h2 class="section-title" style="color: #15803d;">3. Fortalezas Académicas (Top 5 del Grupo)</h2>
                 <table>
                     <tr><th>#</th><th>Materia</th><th>Porcentaje de Acierto</th></tr>
-                    ${filasPuntosDebiles || '<tr><td colspan="3">Sin datos suficientes.</td></tr>'}
+                    ${filasPuntosFuertesGlobal || '<tr><td colspan="3">Sin datos suficientes.</td></tr>'}
                 </table>
 
-                <h2 class="section-title" style="color: #dc2626;">4. Reporte de Incidencias y Fraudes</h2>
+                <h2 class="section-title" style="color: #d32f2f;">4. Focos Rojos (Materias de Bajo Rendimiento)</h2>
+                <table>
+                    <tr><th>#</th><th>Materia</th><th>Porcentaje de Acierto</th></tr>
+                    ${filasPuntosDebilesGlobal || '<tr><td colspan="3">Sin datos suficientes.</td></tr>'}
+                </table>
+
+                <h2 class="section-title" style="color: #dc2626;">5. Reporte de Incidencias y Fraudes</h2>
                 <p style="font-size:12px; color:#555;">Lista de alumnos a los que se les anuló uno o más exámenes por salir de la pantalla completa (abandono de ventana de seguridad).</p>
                 ${listaNegraHTML}
 
@@ -232,6 +242,8 @@ formIndividual.addEventListener('submit', async (e) => {
         btnBuscar.disabled = true;
         btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
         resUI.classList.add('hidden');
+        document.getElementById('tablasIndividualUI')?.classList.add('hidden');
+        
         btnPDFIndividual.disabled = true;
         btnPDFIndividual.classList.replace('bg-red-600', 'bg-gray-400');
         btnPDFIndividual.classList.add('cursor-not-allowed');
@@ -246,6 +258,30 @@ formIndividual.addEventListener('submit', async (e) => {
         // Mostrar éxito en UI
         txtInfo.innerText = `Boleta: ${data.boleta} | CURP: ${data.curp}`;
         resUI.classList.remove('hidden');
+
+        // --- LLENAR TABLAS INDIVIDUALES EN PANTALLA ---
+        const uiTablas = document.getElementById('tablasIndividualUI');
+        if(uiTablas) {
+            uiTablas.classList.remove('hidden');
+            
+            const fortalezas = [...data.puntosDebiles].sort((a, b) => b.porcentaje - a.porcentaje).slice(0, 5);
+            const debilidades = [...data.puntosDebiles].sort((a, b) => a.porcentaje - b.porcentaje).slice(0, 5);
+
+            document.getElementById('tbodyFortalezas').innerHTML = fortalezas.map(m => `
+                <tr class="border-b">
+                    <td class="py-2">${m.materia}</td>
+                    <td class="py-2 text-green-600 font-bold">${m.porcentaje.toFixed(1)}%</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('tbodyDebilidades').innerHTML = debilidades.map(m => `
+                <tr class="border-b">
+                    <td class="py-2">${m.materia}</td>
+                    <td class="py-2 text-red-600 font-bold">${m.porcentaje.toFixed(1)}%</td>
+                </tr>
+            `).join('');
+        }
+        // ----------------------------------------------
 
         // Habilitar botón PDF
         btnPDFIndividual.disabled = false;
@@ -267,10 +303,18 @@ btnPDFIndividual.addEventListener('click', () => {
 
     const ventanaImpresion = window.open('', '', 'height=800,width=800');
     
-    let filasDebiles = '';
-    d.puntosDebiles.forEach((m, i) => {
-        filasDebiles += `<tr><td>${i+1}</td><td>${m.materia}</td><td style="color:red; font-weight:bold;">${m.porcentaje}%</td></tr>`;
-    });
+    // --- CÁLCULO PARA EL PDF INDIVIDUAL ---
+    const filasFuertes = [...d.puntosDebiles]
+        .sort((a, b) => b.porcentaje - a.porcentaje)
+        .slice(0, 5)
+        .map((m, i) => `<tr><td>${i+1}</td><td>${m.materia}</td><td style="color:green; font-weight:bold;">${m.porcentaje.toFixed(1)}%</td></tr>`)
+        .join('');
+
+    const filasDebiles = [...d.puntosDebiles]
+        .sort((a, b) => a.porcentaje - b.porcentaje)
+        .slice(0, 5)
+        .map((m, i) => `<tr><td>${i+1}</td><td>${m.materia}</td><td style="color:red; font-weight:bold;">${m.porcentaje.toFixed(1)}%</td></tr>`)
+        .join('');
 
     const htmlDocument = `
         <html>
@@ -318,7 +362,14 @@ btnPDFIndividual.addEventListener('click', () => {
                 </tr>
             </table>
 
-            <h2 class="section-title">2. Áreas de Oportunidad (Personal)</h2>
+            <h2 class="section-title" style="color: #15803d;">2. Fortalezas Académicas (Top 5)</h2>
+            <p style="font-size: 13px; color: #666;">Materias con mayor porcentaje de acierto del estudiante:</p>
+            <table>
+                <tr><th>#</th><th>Materia</th><th>Porcentaje de Acierto</th></tr>
+                ${filasFuertes || '<tr><td colspan="3">No hay datos suficientes registrados.</td></tr>'}
+            </table>
+
+            <h2 class="section-title" style="color: #d32f2f;">3. Áreas de Oportunidad (A Mejorar)</h2>
             <p style="font-size: 13px; color: #666;">Materias con menor porcentaje de acierto del estudiante:</p>
             <table>
                 <tr><th>#</th><th>Materia</th><th>Porcentaje de Acierto</th></tr>
