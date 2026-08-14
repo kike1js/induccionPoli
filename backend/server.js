@@ -453,7 +453,7 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
                 porArea: { sociales: totalSociales, exactas: totalExactas, experimentales: totalExperimentales } 
             },
             promedios: { sociales: parseFloat(promSociales), exactas: parseFloat(promExactas), experimentales: parseFloat(promExperimentales) },
-            puntosDebiles: rendimientoMaterias.slice(0, 5) 
+            puntosDebiles: rendimientoMaterias.slice(0, 10) 
         });
     } catch (error) {
         res.status(500).json({ error: "Error interno" });
@@ -498,7 +498,7 @@ app.get('/api/examen/reporte-individual/:boleta', async (req, res) => {
             return { materia, porcentaje: parseFloat(porcentaje) };
         }).sort((a, b) => a.porcentaje - b.porcentaje); 
 
-        res.status(200).json({ boleta: usuario.boleta, curp: usuario.curp, areas: resultadosPorArea, puntosDebiles: rendimientoMaterias.slice(0, 5) });
+        res.status(200).json({ boleta: usuario.boleta, curp: usuario.curp, areas: resultadosPorArea, puntosDebiles: rendimientoMaterias.slice(0, 10) });
     } catch (error) {
         res.status(500).json({ error: "Error interno del servidor" });
     }

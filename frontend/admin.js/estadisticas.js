@@ -277,17 +277,17 @@ btnPDFIndividual.addEventListener('click', () => {
         <head>
             <title>Acuse Individual - ${d.boleta}</title>
             <style>
-                body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 40px; }
-                .header { border-bottom: 3px solid #6c1d45; padding-bottom: 20px; margin-bottom: 30px; }
-                .header h1 { color: #6c1d45; margin: 0; font-size: 22px; text-transform: uppercase; }
-                .subtitle { color: #555; font-size: 14px; margin-top: 5px; }
+                body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 30px; }
+                .header { border-bottom: 3px solid #6c1d45; padding-bottom: 18px; margin-bottom: 25px; }
+                .header h1 { color: #6c1d45; margin: 0; font-size: 20px; text-transform: uppercase; }
+                .subtitle { color: #555; font-size: 12px; margin-top: 5px; }
                 .section-title { font-size: 16px; color: #6c1d45; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 30px;}
-                table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
                 th { background-color: #f3f4f6; color: #333; padding: 10px; text-align: left; border: 1px solid #ddd;}
                 td { padding: 10px; border: 1px solid #ddd; }
                 .anulado { color: white; background: #dc2626; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight:bold;}
                 .footer { margin-top: 50px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px;}
-                .student-info { background: #f9fafb; padding: 15px; border-left: 4px solid #6c1d45; margin-bottom: 20px;}
+                .student-info { background: #f9fafb; padding: 13px; border-left: 4px solid #6c1d45; margin-bottom: 15px;}
             </style>
         </head>
         <body>
