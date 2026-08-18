@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // Petición al MOTOR de Exámenes (Puerto 3002)
-            const respuesta = await fetch('http://148.204.239.124:3002/api/usuarios/generador', {
+            const respuesta = await fetch('https://www.bitacora.cecyt14.ipn.mx/api/usuarios/generador', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(usuariosPendientes)

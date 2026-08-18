@@ -36,7 +36,7 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
         // ==========================================
         // PETICIÓN AL BACKEND (PUERTO 3002)
         // ==========================================
-        const respuesta = await fetch('http://148.204.239.124:3002/api/examen/login', {
+        const respuesta = await fetch('https://www.bitacora.cecyt14.ipn.mx/api/examen/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ boleta: boletaStr, curp: curp })

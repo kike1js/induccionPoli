@@ -190,7 +190,7 @@
                     try {
                         // 2. Preguntar a MongoDB si hay un examen a medias
                         // OJO: Si clonas esto a exactas, cambia "sociales" a "exactas" en la URL
-                        const respuesta = await fetch(`http://148.204.239.124:3002/api/examen/estado-vivo/${boleta}/sociales`);
+                        const respuesta = await fetch(`https://www.bitacora.cecyt14.ipn.mx/api/examen/estado-vivo/${boleta}/sociales`);
                         const estadoGuardado = await respuesta.json();
 
                         // 3. Validar el estado

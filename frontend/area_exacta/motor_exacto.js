@@ -419,7 +419,7 @@ async function autoGuardarEnServidor() {
     };
 
     try {
-        await fetch('http://148.204.239.124:3002/api/examen/autoguardar', {
+        await fetch('https://www.bitacora.cecyt14.ipn.mx/api/examen/autoguardar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -449,7 +449,7 @@ async function finalizarExamen(motivo = "terminado_por_usuario") {
     console.log("Enviando paquete definitivo al Backend:", payload);
 
     try {
-        const response = await fetch('http://148.204.239.124:3002/api/examen/entregar', {
+        const response = await fetch('https://www.bitacora.cecyt14.ipn.mx/api/examen/entregar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

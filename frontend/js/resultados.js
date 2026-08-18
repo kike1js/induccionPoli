@@ -19,7 +19,7 @@
 
             // 2. OBTENER ESTADÍSTICAS DIRECTAMENTE DESDE EL NODO DE EXÁMENES (Populate)
             try {
-                const response = await fetch(`http://148.204.239.124:3002/api/examen/stats/${boleta}`);
+                const response = await fetch(`https://www.bitacora.cecyt14.ipn.mx/api/examen/stats/${boleta}`);
                 if (!response.ok) throw new Error("No se pudieron cargar las estadísticas.");
                 
                 const stats = await response.json();
