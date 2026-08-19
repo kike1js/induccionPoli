@@ -31,88 +31,80 @@ mongoose.connect(MONGO_URI, {
 .catch(err => console.error('Error conectando a MongoDB:', err));
 
 // ==========================================
-// 3. RUTAS DE UTILERÍA Y SEMBRADO
+// 3. RUTAS DE UTILERÍA Y SEMBRADO (Limpieza Total)
 // ==========================================
 
-// SEED MULTI-USUARIO (Actualizado con Grupo y Correo)
 app.get('/api/utilerias/seed', async (req, res) => {
     try {
         const resultados = [];
 
-        // 1. Crear Administrador
-        const adminBoleta = 2025000000;
-        let adminExistente = await Usuario.findOne({ boleta: adminBoleta });
-        if (!adminExistente) {
-            const adminUser = new Usuario({
-                idFirebase: 'admin_poliaprende_001',
-                boleta: adminBoleta,
-                curp: 'ADMIN1234567890',
-                correo: 'admin@cecyt.mx',
-                grupo: 'ADMIN',
-                rol: 'administrador',
-                isOnline: false
-            });
-            await adminUser.save();
-            resultados.push('Administrador creado (Boleta: 2025000000)');
-        } else {
-            resultados.push('Administrador ya existía.');
-        }
+        await Usuario.deleteMany({});
+        await ExamenIntento.deleteMany({});
+        resultados.push('Base de datos limpiada exitosamente.');
 
-        // 2. Conservar tu Alumno Principal
-        const boletaPrincipal = 2025630152;
-        let principalExistente = await Usuario.findOne({ boleta: boletaPrincipal });
-        if (!principalExistente) {
-            const nuevoPrincipal = new Usuario({
-                idFirebase: 'semilla-prueba-123',
-                boleta: boletaPrincipal,
-                curp: 'ZESE060222HMCMLNA7',
-                correo: 'alumno1@cecyt.mx',
-                grupo: '4IV15',
-                rol: 'alumno',
-                isOnline: false,
-                simuladorInduccion: {
-                    ciencias_sociales: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } },
-                    ciencias_exactas: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } },
-                    ciencias_experimentales: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } }
-                }
-            });
-            await nuevoPrincipal.save();
-            resultados.push('Alumno Principal creado de cero (Grupo: 4IV15).');
-        } else {
-            resultados.push('Alumno Principal protegido.');
-        }
+        // 1. Administrador
+        const adminUser = new Usuario({
+            idFirebase: 'admin_poliaprende_001',
+            boleta: "2025000000",
+            curp: 'ADMIN1234567890',
+            nombre: 'Admin Cecyt',
+            correo: 'admin@cecyt.mx',
+            grupo: 'ADMIN',
+            turno: 'MATUTINO', // ¡NUEVO!
+            rol: 'administrador',
+            isOnline: false
+        });
+        await adminUser.save();
+        resultados.push('Administrador creado: Admin Cecyt');
 
-        // 3. Crear Alumno Extra para Estadísticas
-        const boletaExtra = 2025111111;
-        let extraExistente = await Usuario.findOne({ boleta: boletaExtra });
-        if (!extraExistente) {
-            const nuevoExtra = new Usuario({
-                idFirebase: 'alumno_extra_002',
-                boleta: boletaExtra,
-                curp: 'ALUMNOEXTRA123',
-                correo: 'alumno2@cecyt.mx',
-                grupo: '4IV15',
-                rol: 'alumno',
-                isOnline: false,
-                simuladorInduccion: {
-                    ciencias_sociales: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } },
-                    ciencias_exactas: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } },
-                    ciencias_experimentales: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } }
-                }
-            });
-            await nuevoExtra.save();
-            resultados.push('Alumno Extra creado (Boleta: 2025111111, Grupo: 4IV15)');
-        } else {
-            resultados.push('Alumno Extra ya existía.');
-        }
+        // 2. Alumno Principal
+        const nuevoPrincipal = new Usuario({
+            idFirebase: 'semilla-prueba-123',
+            boleta: "2025630152",
+            curp: 'ZESE060222HMCMLNA7',
+            nombre: 'Enrique Salinas',
+            correo: 'alumno1@cecyt.mx',
+            grupo: '4IV15',
+            turno: 'VESPERTINO', // ¡NUEVO!
+            rol: 'alumno',
+            isOnline: false,
+            simuladorInduccion: {
+                ciencias_sociales: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } },
+                ciencias_exactas: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } },
+                ciencias_experimentales: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } }
+            }
+        });
+        await nuevoPrincipal.save();
+        resultados.push('Alumno Principal creado: Enrique Salinas (Turno: Vespertino)');
 
-        return res.status(200).json({ mensaje: 'Seed Finalizado', detalles: resultados });
+        // 3. Alumno Extra
+        const nuevoExtra = new Usuario({
+            idFirebase: 'alumno_extra_002',
+            boleta: "2025111111",
+            curp: 'ALUMNOEXTRA123',
+            nombre: 'Jorge Perez',
+            correo: 'alumno2@cecyt.mx',
+            grupo: '4IM11',
+            turno: 'MATUTINO', // ¡NUEVO!
+            rol: 'alumno',
+            isOnline: false,
+            simuladorInduccion: {
+                ciencias_sociales: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } },
+                ciencias_exactas: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } },
+                ciencias_experimentales: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } }
+            }
+        });
+        await nuevoExtra.save();
+        resultados.push('Alumno Extra creado: Jorge Perez (Turno: Matutino)');
+
+        return res.status(200).json({ mensaje: 'Replantado con Turno Finalizado', detalles: resultados });
 
     } catch (error) {
         console.error('Error en Seed:', error);
         res.status(500).json({ error: 'Error inyectando semilla: ' + error.message });
     }
 });
+
 
 // DESBLOQUEAR ALUMNOS Y REINICIAR MEMORIA
 app.get('/api/utilerias/perdonar/:boleta', async (req, res) => {
@@ -232,7 +224,7 @@ app.post('/api/examen/autoguardar', async (req, res) => {
     }
 });
 
-// RECIBIR Y CALIFICAR EXAMEN (Blindado contra dobles envíos)
+//ENTREGAR EXAMEN
 app.post('/api/examen/entregar', async (req, res) => {
     try {
         const payload = req.body;
@@ -247,7 +239,7 @@ app.post('/api/examen/entregar', async (req, res) => {
         const intentosPrevios = usuario.simuladorInduccion?.[campoArea]?.intentosRealizados || 0;
         
         if (intentosPrevios >= 1) {
-            console.warn(`[Seguridad] Intento duplicado bloqueado para boleta: ${payload.boleta} en área: ${areaNormalizada}`);
+            console.warn(`[Seguridad] Intento duplicado bloqueado para boleta: ${payload.boleta}`);
             return res.status(403).json({ 
                 codigo: "EXAMEN_DUPLICADO", 
                 error: "Violación de seguridad: El alumno ya tiene un examen completado en esta área." 
@@ -262,24 +254,58 @@ app.post('/api/examen/entregar', async (req, res) => {
 
         let aciertosTotales = 0;
         const totalReactivos = Object.keys(clavesCorrectas).length; 
-        const desglose = {}; 
+        
+        const desgloseMaterias = {}; 
+        const desgloseTemas = {}; 
+        const desgloseSubtemas = {}; 
 
+        // 1. Inicializar estructuras
         for (const indice in clavesCorrectas) {
-            const matInfo = clavesCorrectas[indice].materia;
-            if (!desglose[matInfo]) desglose[matInfo] = { aciertos: 0, total: 0 };
-            desglose[matInfo].total++;
+            const item = clavesCorrectas[indice];
+            const matInfo = item.materia || "General";
+            const temaInfo = item.tema || "General";
+            const subtemaInfo = item.subtema || "General";
+
+            if (!desgloseMaterias[matInfo]) desgloseMaterias[matInfo] = { aciertos: 0, total: 0, ratio: "0/0" };
+            desgloseMaterias[matInfo].total++;
+
+            if (!desgloseTemas[temaInfo]) desgloseTemas[temaInfo] = { aciertos: 0, total: 0, ratio: "0/0" };
+            desgloseTemas[temaInfo].total++;
+
+            if (!desgloseSubtemas[subtemaInfo]) desgloseSubtemas[subtemaInfo] = { aciertos: 0, total: 0, ratio: "0/0" };
+            desgloseSubtemas[subtemaInfo].total++;
         }
 
+        // 2. Evaluar Respuestas
         if (!payload.examen_anulado) {
             for (const indice in payload.respuestas) {
-                if (clavesCorrectas[indice] && payload.respuestas[indice] === clavesCorrectas[indice].respuesta) {
+                const itemClave = clavesCorrectas[indice];
+                if (itemClave && payload.respuestas[indice] === itemClave.respuesta) {
                     aciertosTotales++; 
-                    desglose[clavesCorrectas[indice].materia].aciertos++;
+                    const mat = itemClave.materia || "General";
+                    const tema = itemClave.tema || "General";
+                    const subtema = itemClave.subtema || "General";
+
+                    if (desgloseMaterias[mat]) desgloseMaterias[mat].aciertos++;
+                    if (desgloseTemas[tema]) desgloseTemas[tema].aciertos++;
+                    if (desgloseSubtemas[subtema]) desgloseSubtemas[subtema].aciertos++;
                 }
             }
         }
 
+        Object.keys(desgloseMaterias).forEach(m => {
+            desgloseMaterias[m].ratio = `${desgloseMaterias[m].aciertos}/${desgloseMaterias[m].total}`;
+        });
+        Object.keys(desgloseTemas).forEach(t => {
+            desgloseTemas[t].ratio = `${desgloseTemas[t].aciertos}/${desgloseTemas[t].total}`;
+        });
+        Object.keys(desgloseSubtemas).forEach(st => {
+            desgloseSubtemas[st].ratio = `${desgloseSubtemas[st].aciertos}/${desgloseSubtemas[st].total}`;
+        });
+
         const calificacionBase10 = totalReactivos > 0 ? (aciertosTotales / totalReactivos) * 10 : 0;
+        
+        // 4. Crear Intento
         const nuevoIntento = new ExamenIntento({
             usuario: usuario._id, 
             boleta_alumno: payload.boleta, 
@@ -291,7 +317,9 @@ app.post('/api/examen/entregar', async (req, res) => {
             respuestas_crudas: payload.respuestas, 
             aciertos: aciertosTotales,
             calificacion_final: parseFloat(calificacionBase10.toFixed(2)), 
-            desglose_materias: desglose
+            desglose_materias: desgloseMaterias,
+            desglose_temas: desgloseTemas,
+            desglose_subtemas: desgloseSubtemas 
         });
         await nuevoIntento.save();
 
@@ -311,7 +339,9 @@ app.post('/api/examen/entregar', async (req, res) => {
             const puntajePrevio = usuario.simuladorInduccion?.[campoArea]?.mejorPuntaje || 0;
             if (aciertosTotales >= puntajePrevio) {
                 updateQuery.$set[`simuladorInduccion.${campoArea}.mejorPuntaje`] = aciertosTotales;
-                updateQuery.$set[`simuladorInduccion.${campoArea}.desglose_materias`] = desglose;
+                updateQuery.$set[`simuladorInduccion.${campoArea}.desglose_materias`] = desgloseMaterias;
+                updateQuery.$set[`simuladorInduccion.${campoArea}.desglose_temas`] = desgloseTemas;
+                updateQuery.$set[`simuladorInduccion.${campoArea}.desglose_subtemas`] = desgloseSubtemas; 
             }
         }
 
@@ -324,10 +354,13 @@ app.post('/api/examen/entregar', async (req, res) => {
             calificacion: parseFloat(calificacionBase10.toFixed(2)), 
             anulado: payload.examen_anulado, 
             area_examen: areaNormalizada, 
-            desglose_materias: desglose 
+            desglose_materias: desgloseMaterias,
+            desglose_temas: desgloseTemas,
+            desglose_subtemas: desgloseSubtemas 
         });
 
     } catch (error) {
+        console.error('Error al entregar examen:', error);
         res.status(500).json({ error: 'Error interno: ' + error.message });
     }
 });
@@ -336,7 +369,7 @@ app.post('/api/examen/entregar', async (req, res) => {
 // 5. RUTAS ADMINISTRATIVAS Y DE ESTADÍSTICAS
 // ==========================================
 
-// CARGA MASIVA DE USUARIOS (Adaptado para recibir Grupo y Correo)
+// CARGA MASIVA DE USUARIOS (Adaptado para Nombre, Grupo, Turno y Correo)
 app.post('/api/usuarios/generador', async (req, res) => {
     try {
         const usuariosNuevos = req.body;
@@ -355,13 +388,29 @@ app.post('/api/usuarios/generador', async (req, res) => {
                     continue;
                 }
 
+                // 1. Asignación de Defaults y Validaciones
+                const nombreFinal = user.nombre ? user.nombre.toUpperCase().trim() : 'ASPIRANTE SIN NOMBRE';
+                const rolFinal = user.rol ? user.rol.toLowerCase().trim() : 'alumno';
+                
+                // Si vienen vacíos, inyectamos los valores de control escolar por defecto
+                let grupoFinal = (user.grupo && user.grupo.trim() !== '') ? user.grupo.toUpperCase().trim() : 'POR DEFINIR';
+                let turnoFinal = (user.turno && user.turno.trim() !== '') ? user.turno.toUpperCase().trim() : 'MATUTINO';
+
+                // Si es administrador, forzamos su grupo
+                if (rolFinal === 'administrador') {
+                    grupoFinal = 'ADMIN';
+                }
+
+                // 2. Creación del Modelo
                 const nuevoUsuario = new Usuario({
                     idFirebase: crypto.randomUUID(), 
                     boleta: boletaNum,
-                    curp: user.curp.toUpperCase(),
+                    curp: user.curp ? user.curp.toUpperCase().trim() : '',
+                    nombre: nombreFinal,
                     correo: user.correo ? user.correo.trim().toLowerCase() : '',
-                    grupo: user.grupo ? user.grupo.toUpperCase().trim() : 'SIN GRUPO',
-                    rol: user.rol || 'alumno',
+                    grupo: grupoFinal,
+                    turno: turnoFinal,
+                    rol: rolFinal,
                     isOnline: false,
                     simuladorInduccion: {
                         ciencias_sociales: { estadoActual: { estado: 'no_iniciado', tiempoRestante: 3600 } },
@@ -382,10 +431,10 @@ app.post('/api/usuarios/generador', async (req, res) => {
     }
 });
 
-// REPORTE ESTADÍSTICO GLOBAL (Con Tramposos Anulados)
+// REPORTE ESTADÍSTICO GLOBAL (Con Temas, Subtemas y Turno)
 app.get('/api/examen/reporte-estadisticas', async (req, res) => {
     try {
-        const { fechaInicio, fechaFin } = req.query;
+        const { fechaInicio, fechaFin, turno } = req.query;
         const query = {};
 
         if (fechaInicio && fechaFin) {
@@ -394,14 +443,28 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
             query.fecha_intento = { $gte: start, $lte: end };
         }
 
+        // Pre-filtrar usuarios por turno para cruzar con los intentos
+        let usuariosFilter = { rol: 'alumno' };
+        if (turno && turno !== 'TODOS') {
+            usuariosFilter.turno = turno.toUpperCase().trim();
+        }
+        const usuariosValidos = await Usuario.find(usuariosFilter).select('_id');
+        const usuariosIds = usuariosValidos.map(u => u._id.toString());
+
+        if (Object.keys(usuariosFilter).length > 0) {
+            query.usuario = { $in: usuariosIds };
+        }
+
         const intentos = await ExamenIntento.find(query);
 
         let totalSociales = 0, totalExactas = 0, totalExperimentales = 0;
         let sumaSociales = 0, sumaExactas = 0, sumaExperimentales = 0;
+        
         let materiasStats = {}; 
+        let temasStats = {};
+        let subtemasStats = {};
         let usuariosSet = new Set();
         let usuariosPorArea = { sociales: new Set(), exactas: new Set(), experimentales: new Set() };
-
         let examenesAnuladosPorTrampa = 0;
 
         intentos.forEach(intento => {
@@ -409,23 +472,26 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
             usuariosSet.add(userIdStr);
             const area = intento.area_examen;
 
-            if (intento.examen_anulado === true) {
-                examenesAnuladosPorTrampa++;
-            }
+            if (intento.examen_anulado) examenesAnuladosPorTrampa++;
 
-            const calificacion = intento.calificacion_final;
+            const calif = intento.calificacion_final;
+            if (area === 'ciencias sociales') { totalSociales++; sumaSociales += calif; usuariosPorArea.sociales.add(userIdStr); }
+            else if (area === 'ciencias exactas') { totalExactas++; sumaExactas += calif; usuariosPorArea.exactas.add(userIdStr); }
+            else if (area === 'ciencias experimentales') { totalExperimentales++; sumaExperimentales += calif; usuariosPorArea.experimentales.add(userIdStr); }
 
-            if (area === 'ciencias sociales') { totalSociales++; sumaSociales += calificacion; usuariosPorArea.sociales.add(userIdStr); }
-            else if (area === 'ciencias exactas') { totalExactas++; sumaExactas += calificacion; usuariosPorArea.exactas.add(userIdStr); }
-            else if (area === 'ciencias experimentales') { totalExperimentales++; sumaExperimentales += calificacion; usuariosPorArea.experimentales.add(userIdStr); }
-
-            if (intento.desglose_materias) {
-                for (const [materia, stats] of Object.entries(intento.desglose_materias)) {
-                    if (!materiasStats[materia]) materiasStats[materia] = { aciertos: 0, total: 0 };
-                    materiasStats[materia].aciertos += stats.aciertos;
-                    materiasStats[materia].total += stats.total;
+            // Acumular Materias, Temas y Subtemas
+            const acumular = (fuente, destino) => {
+                if (!fuente) return;
+                for (const [key, stats] of Object.entries(fuente)) {
+                    if (!destino[key]) destino[key] = { aciertos: 0, total: 0 };
+                    destino[key].aciertos += stats.aciertos;
+                    destino[key].total += stats.total;
                 }
-            }
+            };
+
+            acumular(intento.desglose_materias, materiasStats);
+            acumular(intento.desglose_temas, temasStats);
+            acumular(intento.desglose_subtemas, subtemasStats);
         });
 
         let alumnosCompletos = 0;
@@ -433,15 +499,11 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
             if (usuariosPorArea.sociales.has(userId) && usuariosPorArea.exactas.has(userId) && usuariosPorArea.experimentales.has(userId)) alumnosCompletos++;
         });
 
-        const promSociales = totalSociales > 0 ? (sumaSociales / totalSociales).toFixed(2) : 0;
-        const promExactas = totalExactas > 0 ? (sumaExactas / totalExactas).toFixed(2) : 0;
-        const promExperimentales = totalExperimentales > 0 ? (sumaExperimentales / totalExperimentales).toFixed(2) : 0;
-
-        const rendimientoMaterias = Object.keys(materiasStats).map(materia => {
-            const stats = materiasStats[materia];
-            const porcentaje = stats.total > 0 ? ((stats.aciertos / stats.total) * 100).toFixed(2) : 0;
-            return { materia, porcentaje: parseFloat(porcentaje) };
-        }).sort((a, b) => a.porcentaje - b.porcentaje); 
+        const formatearStats = (obj) => Object.keys(obj).map(nombre => {
+            const stats = obj[nombre];
+            const porcentaje = stats.total > 0 ? ((stats.aciertos / stats.total) * 100) : 0;
+            return { nombre, aciertos: stats.aciertos, total: stats.total, porcentaje: parseFloat(porcentaje.toFixed(2)) };
+        }).sort((a, b) => a.porcentaje - b.porcentaje);
 
         res.status(200).json({
             rango: { fechaInicio, fechaFin },
@@ -449,18 +511,24 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
                 totalExamenes: intentos.length, 
                 alumnosUnicos: usuariosSet.size, 
                 alumnosCompletaronTodo: alumnosCompletos, 
-                examenesAnuladosPorTrampa: examenesAnuladosPorTrampa,
+                examenesAnuladosPorTrampa,
                 porArea: { sociales: totalSociales, exactas: totalExactas, experimentales: totalExperimentales } 
             },
-            promedios: { sociales: parseFloat(promSociales), exactas: parseFloat(promExactas), experimentales: parseFloat(promExperimentales) },
-            puntosDebiles: rendimientoMaterias 
+            promedios: { 
+                sociales: totalSociales > 0 ? parseFloat((sumaSociales / totalSociales).toFixed(2)) : 0, 
+                exactas: totalExactas > 0 ? parseFloat((sumaExactas / totalExactas).toFixed(2)) : 0, 
+                experimentales: totalExperimentales > 0 ? parseFloat((sumaExperimentales / totalExperimentales).toFixed(2)) : 0 
+            },
+            rendimientoMaterias: formatearStats(materiasStats),
+            rendimientoTemas: formatearStats(temasStats),
+            rendimientoSubtemas: formatearStats(subtemasStats)
         });
     } catch (error) {
         res.status(500).json({ error: "Error interno" });
     }
 });
 
-// REPORTE INDIVIDUAL (ACUSE POR ALUMNO)
+// REPORTE INDIVIDUAL (Acuse por alumno)
 app.get('/api/examen/reporte-individual/:boleta', async (req, res) => {
     try {
         const boleta = Number(req.params.boleta);
@@ -472,7 +540,10 @@ app.get('/api/examen/reporte-individual/:boleta', async (req, res) => {
         let resultadosPorArea = {
             sociales: { calificacion: 'Pendiente', anulado: false }, exactas: { calificacion: 'Pendiente', anulado: false }, experimentales: { calificacion: 'Pendiente', anulado: false }
         };
-        let desgloseTotal = {};
+        
+        let desgloseMaterias = {};
+        let desgloseTemas = {};
+        let desgloseSubtemas = {};
 
         examenes.forEach(ex => {
             let areaKey = '';
@@ -484,21 +555,37 @@ app.get('/api/examen/reporte-individual/:boleta', async (req, res) => {
                 resultadosPorArea[areaKey] = { calificacion: ex.calificacion_final, anulado: ex.examen_anulado };
             }
 
-            if (ex.desglose_materias) {
-                for (const [materia, stats] of Object.entries(ex.desglose_materias)) {
-                    if (!desgloseTotal[materia]) desgloseTotal[materia] = { aciertos: 0, total: 0 };
-                    desgloseTotal[materia].aciertos += stats.aciertos; desgloseTotal[materia].total += stats.total;
+            const acumular = (fuente, destino) => {
+                if (!fuente) return;
+                for (const [key, stats] of Object.entries(fuente)) {
+                    if (!destino[key]) destino[key] = { aciertos: 0, total: 0 };
+                    destino[key].aciertos += stats.aciertos;
+                    destino[key].total += stats.total;
                 }
-            }
+            };
+
+            acumular(ex.desglose_materias, desgloseMaterias);
+            acumular(ex.desglose_temas, desgloseTemas);
+            acumular(ex.desglose_subtemas, desgloseSubtemas);
         });
 
-        const rendimientoMaterias = Object.keys(desgloseTotal).map(materia => {
-            const stats = desgloseTotal[materia];
-            const porcentaje = stats.total > 0 ? ((stats.aciertos / stats.total) * 100).toFixed(2) : 0;
-            return { materia, porcentaje: parseFloat(porcentaje) };
-        }).sort((a, b) => a.porcentaje - b.porcentaje); 
+        const formatearStats = (obj) => Object.keys(obj).map(nombre => {
+            const stats = obj[nombre];
+            const porcentaje = stats.total > 0 ? ((stats.aciertos / stats.total) * 100) : 0;
+            return { nombre, aciertos: stats.aciertos, total: stats.total, porcentaje: parseFloat(porcentaje.toFixed(2)) };
+        }).sort((a, b) => a.porcentaje - b.porcentaje);
 
-        res.status(200).json({ boleta: usuario.boleta, curp: usuario.curp, areas: resultadosPorArea, puntosDebiles: rendimientoMaterias }); 
+        res.status(200).json({ 
+            boleta: usuario.boleta, 
+            curp: usuario.curp, 
+            nombre: usuario.nombre, 
+            grupo: usuario.grupo, 
+            turno: usuario.turno,
+            areas: resultadosPorArea, 
+            materias: formatearStats(desgloseMaterias),
+            temas: formatearStats(desgloseTemas),
+            subtemas: formatearStats(desgloseSubtemas)
+        }); 
     } catch (error) {
         res.status(500).json({ error: "Error interno del servidor" });
     }
@@ -532,24 +619,23 @@ app.get('/api/examen/estado-vivo/:boleta/:area', async (req, res) => {
     }
 });
 
-// OBTENER REPORTE DETALLADO PROFESOR (SOPORTA FILTRO POR GRUPO, TRAMPOSOS Y FECHAS)
+
+// REPORTE PROFESOR (Incluye Faltantes, Turno y Nombre de Tramposos)
 app.get('/api/examen/reporte-profesor', async (req, res) => {
     try {
-        const { grupo, fechaInicio, fechaFin } = req.query;
+        const { grupo, turno, fechaInicio, fechaFin } = req.query;
         
         let filtroUsuario = { rol: 'alumno' };
-        if (grupo) {
-            filtroUsuario.grupo = grupo.toUpperCase().trim();
-        }
+        if (grupo) filtroUsuario.grupo = grupo.toUpperCase().trim();
+        if (turno && turno !== 'TODOS') filtroUsuario.turno = turno.toUpperCase().trim();
 
-        // Buscamos a los alumnos con sus exámenes resueltos
         const alumnos = await Usuario.find(filtroUsuario).populate('simuladorInduccion.examenesResueltos');
 
         let totalTramposos = 0;
         let listaTramposos = [];
+        let listaFaltantes = [];
         let totalAlumnosConActividad = 0;
 
-        // Limites de fecha si fueron enviados
         let start = null, end = null;
         if (fechaInicio && fechaFin) {
             start = new Date(fechaInicio); start.setHours(0, 0, 0, 0);
@@ -561,16 +647,39 @@ app.get('/api/examen/reporte-profesor', async (req, res) => {
             let examenesConTrampa = [];
             let tuvoActividadEnPeriodo = false;
 
-            // Revisamos cada examen resuelto del alumno
+            // 1. REVISAR EXÁMENES FALTANTES
+            let areasFaltantes = [];
+            const si = alumno.simuladorInduccion;
+
+            const stSoc = si.ciencias_sociales.estadoActual?.estado || 'no_iniciado';
+            const stExa = si.ciencias_exactas.estadoActual?.estado || 'no_iniciado';
+            const stExp = si.ciencias_experimentales.estadoActual?.estado || 'no_iniciado';
+
+            if (stSoc !== 'finalizado') areasFaltantes.push('Ciencias Sociales');
+            if (stExa !== 'finalizado') areasFaltantes.push('Ciencias Exactas');
+            if (stExp !== 'finalizado') areasFaltantes.push('Cs. Experimentales');
+
+            if (areasFaltantes.length > 0) {
+                listaFaltantes.push({
+                    nombre: alumno.nombre,
+                    boleta: alumno.boleta,
+                    grupo: alumno.grupo,
+                    turno: alumno.turno,
+                    faltan: areasFaltantes,
+                    estados: {
+                        sociales: stSoc,
+                        exactas: stExa,
+                        experimentales: stExp
+                    }
+                });
+            }
+
+            // 2. REVISAR ACTIVIDAD Y TRAMPAS
             alumno.simuladorInduccion.examenesResueltos.forEach(intento => {
-                
-                // Filtro de fechas por cada intento
                 let dentroDeFecha = true;
                 if (start && end && intento.fecha_intento) {
                     const fechaIntento = new Date(intento.fecha_intento);
-                    if (fechaIntento < start || fechaIntento > end) {
-                        dentroDeFecha = false;
-                    }
+                    if (fechaIntento < start || fechaIntento > end) dentroDeFecha = false;
                 }
 
                 if (dentroDeFecha) {
@@ -582,28 +691,29 @@ app.get('/api/examen/reporte-profesor', async (req, res) => {
                 }
             });
 
-            if (tuvoActividadEnPeriodo) {
-                totalAlumnosConActividad++;
-            }
+            if (tuvoActividadEnPeriodo) totalAlumnosConActividad++;
 
             if (hizoTrampa) {
                 totalTramposos++;
                 listaTramposos.push({
+                    nombre: alumno.nombre, // ¡Nombre incluido!
                     boleta: alumno.boleta,
-                    curp: alumno.curp,
-                    correo: alumno.correo,
+                    correo: alumno.correo || alumno.curp,
                     grupo: alumno.grupo,
+                    turno: alumno.turno,
                     examenesAnulados: examenesConTrampa
                 });
             }
         });
 
         res.status(200).json({
-            filtroGrupo: grupo || 'TODOS LOS GRUPOS',
-            // Solo contamos a los alumnos que tuvieron actividad en ese rango de fechas
+            filtroGrupo: grupo || 'TODOS',
+            filtroTurno: turno || 'TODOS',
             totalAlumnosConsultados: start ? totalAlumnosConActividad : alumnos.length, 
             totalTramposos,
-            listaTramposos
+            listaTramposos,
+            totalFaltantes: listaFaltantes.length,
+            listaFaltantes
         });
 
     } catch (error) {

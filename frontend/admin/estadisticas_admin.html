@@ -28,29 +28,37 @@
     </div>
   </header>
 
-  <main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
+  <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl">
     
+    <!-- PANEL GENERAL -->
     <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 mb-8">
-      <h2 class="text-2xl font-bold text-ipnGuinda mb-4"><i class="fas fa-calendar-alt mr-2"></i> Filtro de Búsqueda</h2>
-      <form id="formEstadisticas" class="flex flex-col md:flex-row gap-4 items-end">
-        <div class="w-full md:w-1/4">
-          <label class="block text-sm font-bold text-gray-700 mb-2">Fecha de Inicio</label>
-          <input type="date" id="fechaInicio" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50">
+      <h2 class="text-2xl font-bold text-ipnGuinda mb-4"><i class="fas fa-calendar-alt mr-2"></i> Filtro de Búsqueda Global</h2>
+      <form id="formEstadisticas" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Fecha Inicio</label>
+          <input type="date" id="fechaInicio" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50">
         </div>
-        <div class="w-full md:w-1/4">
-          <label class="block text-sm font-bold text-gray-700 mb-2">Fecha de Corte</label>
-          <input type="date" id="fechaFin" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Fecha Corte</label>
+          <input type="date" id="fechaFin" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50">
         </div>
-        <div class="w-full md:w-1/4">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Turno</label>
+          <select id="filtroTurno" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50">
+            <option value="TODOS">Todos</option>
+            <option value="MATUTINO">Matutino</option>
+            <option value="VESPERTINO">Vespertino</option>
+          </select>
+        </div>
+        <div>
           <label class="block text-sm font-bold text-gray-700 mb-2">Grupo (Opcional)</label>
-          <input type="text" id="filtroGrupo" placeholder="Ej. 4IV15" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50 uppercase">
+          <input type="text" id="filtroGrupo" placeholder="Ej. 4IV15" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50 uppercase">
         </div>
-
-        <div class="w-full md:w-1/4 flex gap-2">
-          <button type="submit" id="btnGenerar" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition shadow flex justify-center items-center gap-2">
+        <div class="flex gap-2">
+          <button type="submit" id="btnGenerar" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-2 rounded-lg transition shadow flex justify-center items-center gap-1 text-sm">
             <i class="fas fa-search"></i> Consultar
           </button>
-          <button type="button" id="btnPDF" disabled class="w-full bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition shadow flex justify-center items-center gap-2 cursor-not-allowed">
+          <button type="button" id="btnPDF" disabled class="w-full bg-gray-400 text-white font-bold py-3 px-2 rounded-lg transition shadow flex justify-center items-center gap-1 text-sm cursor-not-allowed">
             <i class="fas fa-file-pdf"></i> PDF
           </button>
         </div>
@@ -58,45 +66,44 @@
     </div>
     
     <div id="panelResultados" class="hidden">
-      
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white p-6 rounded-2xl shadow border border-gray-200 text-center">
-          <div class="text-gray-500 text-sm font-bold mb-1 uppercase">Alumnos</div>
-          <div id="kpiAlumnos" class="text-3xl font-black text-ipnGuinda">0</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white p-4 rounded-2xl shadow border border-gray-200 text-center">
+          <div class="text-gray-500 text-xs font-bold mb-1 uppercase">Alumnos Eval.</div>
+          <div id="kpiAlumnos" class="text-2xl font-black text-ipnGuinda">0</div>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow border border-gray-200 text-center">
-          <div class="text-gray-500 text-sm font-bold mb-1 uppercase">Exámenes</div>
-          <div id="kpiExamenes" class="text-3xl font-black text-blue-600">0</div>
+        <div class="bg-white p-4 rounded-2xl shadow border border-gray-200 text-center">
+          <div class="text-gray-500 text-xs font-bold mb-1 uppercase">Exámenes Env.</div>
+          <div id="kpiExamenes" class="text-2xl font-black text-blue-600">0</div>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow border border-gray-200 text-center">
-          <div class="text-gray-500 text-sm font-bold mb-1 uppercase">Completaron</div>
-          <div id="kpiCompletos" class="text-3xl font-black text-green-600">0</div>
+        <div class="bg-green-50 p-4 rounded-2xl shadow border border-green-200 text-center">
+          <div class="text-green-700 text-xs font-bold mb-1 uppercase">Completaron Todo</div>
+          <div id="kpiCompletos" class="text-2xl font-black text-green-600">0</div>
         </div>
-        <div class="bg-red-50 p-6 rounded-2xl shadow border border-red-200 text-center relative overflow-hidden">
-          <div class="text-red-700 text-sm font-bold mb-1 uppercase z-10 relative">Exámenes Anulados</div>
-          <div id="kpiTramposos" class="text-3xl font-black text-red-600 z-10 relative">0</div>
-          <i class="fas fa-user-shield absolute -bottom-4 -right-4 text-red-100 text-6xl z-0"></i>
+        <div class="bg-yellow-50 p-4 rounded-2xl shadow border border-yellow-200 text-center">
+          <div class="text-yellow-700 text-xs font-bold mb-1 uppercase">Faltan de Terminar</div>
+          <div id="kpiFaltantes" class="text-2xl font-black text-yellow-600">0</div>
+        </div>
+        <div class="bg-red-50 p-4 rounded-2xl shadow border border-red-200 text-center relative overflow-hidden">
+          <div class="text-red-700 text-xs font-bold mb-1 uppercase z-10 relative">Anulados (Fraude)</div>
+          <div id="kpiTramposos" class="text-2xl font-black text-red-600 z-10 relative">0</div>
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <div class="bg-white p-6 rounded-2xl shadow border border-gray-200">
           <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Promedios Generales (Base 10)</h3>
-          <ul class="space-y-4" id="listaPromedios">
-          </ul>
+          <ul class="space-y-4" id="listaPromedios"></ul>
         </div>
-
         <div class="bg-white p-6 rounded-2xl shadow border border-gray-200">
           <h3 class="text-lg font-bold text-red-600 mb-4 border-b border-red-200 pb-2">
             <i class="fas fa-exclamation-circle"></i> Focos Rojos (Materias más bajas)
           </h3>
-          <ul class="space-y-3" id="listaDebiles">
-          </ul>
+          <ul class="space-y-3" id="listaDebiles"></ul>
         </div>
       </div>
-
     </div> 
     
+    <!-- PANEL INDIVIDUAL -->
     <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 mt-4">
       <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fas fa-user-graduate text-ipnGuinda mr-2"></i> Búsqueda Individual por Alumno</h2>
       <form id="formIndividual" class="flex flex-col md:flex-row gap-4 items-end">
@@ -116,20 +123,19 @@
       
       <div id="resIndividualUI" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
         <div>
-            <p class="font-bold text-green-800"><i class="fas fa-check-circle mr-1"></i> Alumno Encontrado</p>
+            <p class="font-bold text-green-800"><i class="fas fa-check-circle mr-1"></i> Alumno Encontrado: <span id="txtNombreAlumno" class="font-normal"></span></p>
             <p class="text-sm text-green-700" id="txtAlumnoEncontrado">Boleta: --</p>
         </div>
         <i class="fas fa-user text-green-600 text-2xl opacity-50"></i>
       </div>
 
-      <!-- NUEVAS TABLAS PARA VER EL TOP 5 DIRECTO EN LA PANTALLA -->
       <div id="tablasIndividualUI" class="hidden mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
             <h3 class="text-lg font-bold text-green-700 mb-3"><i class="fas fa-arrow-up"></i> Top 5: Fortalezas</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left text-gray-500">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                        <tr><th>Materia</th><th>Acierto</th></tr>
+                        <tr><th>Materia</th><th>Aciertos</th></tr>
                     </thead>
                     <tbody id="tbodyFortalezas"></tbody>
                 </table>
@@ -140,14 +146,13 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left text-gray-500">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                        <tr><th>Materia</th><th>Acierto</th></tr>
+                        <tr><th>Materia</th><th>Aciertos</th></tr>
                     </thead>
                     <tbody id="tbodyDebilidades"></tbody>
                 </table>
             </div>
         </div>
       </div>
-
     </div>
 
   </main>

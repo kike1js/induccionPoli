@@ -12,10 +12,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnGuardarBaseDatos = document.getElementById('btnGuardarBaseDatos');
     const toastContainer = document.getElementById('toastContainer');
 
-// 1. ALTA MANUAL
+    // 1. ALTA MANUAL (ACTUALIZADA CON NOMBRE Y TURNO)
     formManual.addEventListener('submit', (e) => {
         e.preventDefault();
+        
         const boleta = document.getElementById('inputBoleta').value.trim();
+        // NUEVOS CAMPOS AÑADIDOS
+        const nombre = document.getElementById('inputNombre').value.trim().toUpperCase();
+        const turno = document.getElementById('selectTurno').value;
+        
         const curp = document.getElementById('inputCurp').value.trim().toUpperCase();
         const correo = document.getElementById('inputCorreo').value.trim().toLowerCase();
         let grupo = document.getElementById('inputGrupo').value.trim().toUpperCase();
@@ -25,11 +30,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (rol === 'administrador') {
             grupo = 'ADMIN';
         } else if (grupo === '') {
-            grupo = 'SIN GRUPO';
+            grupo = 'POR DEFINIR';
         }
 
+        // Validaciones
         if(boleta.length < 8) {
             mostrarToast('La boleta/pre-boleta suele tener al menos 8 dígitos', 'error');
+            return;
+        }
+        if(nombre === '') {
+            mostrarToast('El nombre completo es obligatorio', 'error');
             return;
         }
         if(curp.length !== 18) {
@@ -41,13 +51,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        usuariosPendientes.push({ boleta, curp, correo, grupo, rol });
+        // Empujamos TODOS los datos al arreglo
+        usuariosPendientes.push({ boleta, nombre, curp, correo, grupo, turno, rol });
         
         // Limpiar inputs
         document.getElementById('inputBoleta').value = '';
+        document.getElementById('inputNombre').value = '';
         document.getElementById('inputCurp').value = '';
         document.getElementById('inputCorreo').value = '';
         document.getElementById('inputGrupo').value = '';
+        document.getElementById('selectTurno').value = 'MATUTINO';
         
         actualizarTabla();
         mostrarToast('Usuario agregado a la lista local', 'success');
@@ -84,20 +97,24 @@ document.addEventListener('DOMContentLoaded', () => {
             lines.forEach((line) => {
                 if (!line.trim()) return; 
 
+                // NUEVO ORDEN: Boleta(0), Nombre(1), CURP(2), Correo(3), Grupo(4), Turno(5), Rol(6)
                 const parts = line.split(',');
-                if (parts.length >= 2) {
-                    const boleta = parts[0].trim();
-                    const curp = parts[1].trim().toUpperCase();
-                    const correo = parts[2] ? parts[2].trim().toLowerCase() : '';
-                    let grupo = parts[3] ? parts[3].trim().toUpperCase() : 'SIN GRUPO';
-                    const rol = (parts[4] && parts[4].trim() !== '') ? parts[4].trim().toLowerCase() : 'alumno';
+                if (parts.length >= 3) {
+                    const boleta = parts[0] ? parts[0].trim() : '';
+                    const nombre = parts[1] ? parts[1].trim().toUpperCase() : 'ASPIRANTE SIN NOMBRE';
+                    const curp = parts[2] ? parts[2].trim().toUpperCase() : '';
+                    const correo = parts[3] ? parts[3].trim().toLowerCase() : '';
+                    
+                    let grupo = parts[4] ? parts[4].trim().toUpperCase() : 'POR DEFINIR';
+                    let turno = parts[5] ? parts[5].trim().toUpperCase() : 'MATUTINO';
+                    const rol = (parts[6] && parts[6].trim() !== '') ? parts[6].trim().toLowerCase() : 'alumno';
 
                     if (rol === 'administrador') grupo = 'ADMIN';
 
-                    // Evitar meter basura o cabeceras
+                    // Evitar meter cabeceras de Excel
                     if(boleta.toLowerCase() !== 'boleta' && !isNaN(boleta) && curp.length === 18) {
                         if (!usuariosPendientes.some(u => u.boleta === boleta)) {
-                            usuariosPendientes.push({ boleta, curp, correo, grupo, rol });
+                            usuariosPendientes.push({ boleta, nombre, curp, correo, grupo, turno, rol });
                             agregados++;
                         }
                     }
@@ -133,11 +150,17 @@ document.addEventListener('DOMContentLoaded', () => {
         usuariosPendientes.forEach((user, index) => {
             const tr = document.createElement('tr');
             tr.className = "hover:bg-gray-50 transition";
+            
+            // Pinta el nombre debajo de la boleta y el turno debajo del grupo
             tr.innerHTML = `
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${index + 1}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.boleta}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    ${user.boleta} <br><span class="text-xs text-gray-400 font-normal">${user.nombre}</span>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${user.curp}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">${user.grupo}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">
+                    ${user.grupo} <br><span class="font-normal text-xs text-gray-500">${user.turno}</span>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.rol === 'administrador' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}">
                         ${user.rol}
