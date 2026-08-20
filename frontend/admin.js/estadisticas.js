@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let chartMateriasInstance = null;
 
     // ========================================================
-    // HELPER: Normalizador de texto (ignora acentos y mayúsculas)
+    // HELPER: Normalizador de texto
     // ========================================================
     const normalizarTexto = (str) => {
         if (!str) return "";
@@ -97,60 +97,110 @@ document.addEventListener('DOMContentLoaded', () => {
         if (chartMateriasInstance) chartMateriasInstance.destroy();
 
         const ctxAreas = document.getElementById('chartAreas').getContext('2d');
-        chartAreasInstance = new Chart(ctxAreas, {
-            type: 'bar',
-            data: {
-                labels: ['Ciencias Sociales', 'Ciencias Exactas', 'Experimentales'],
-                datasets: [{
-                    label: 'Promedio General (Base 10)',
-                    data: [stats.promedios.sociales, stats.promedios.exactas, stats.promedios.experimentales],
-                    backgroundColor: ['#6c1d45', '#1e3a8a', '#15803d'],
-                    borderRadius: 4
-                }]
-            },
-            options: { scales: { y: { beginAtZero: true, max: 10 } }, animation: { duration: 0 } }
-        });
+        const ctxMaterias = document.getElementById('chartMaterias').getContext('2d');
+        
+        // Elementos de Título del HTML
+        const tituloGrafica1 = document.getElementById('chartAreas').previousElementSibling;
+        const tituloGrafica2 = document.getElementById('chartMaterias').previousElementSibling;
 
-        let datosParaGrafica = stats.rendimientoMaterias;
-        let tituloGraficaSecundaria = 'Desempeño General por Materias (%)';
-        
         const filtroMateriaVal = document.getElementById('filtroMateria').value;
-        
-        if (filtroMateriaVal !== 'TODAS') {
+
+        // ===============================================
+        // MODO 1: VISTA GLOBAL (Todas las materias)
+        // ===============================================
+        if (filtroMateriaVal === 'TODAS') {
+            tituloGrafica1.innerText = 'Rendimiento por Área (Base 10)';
+            tituloGrafica2.innerText = 'Desempeño General por Materias (%)';
+
+            // Gráfica Izquierda: Áreas
+            chartAreasInstance = new Chart(ctxAreas, {
+                type: 'bar',
+                data: {
+                    labels: ['Ciencias Sociales', 'Ciencias Exactas', 'Experimentales'],
+                    datasets: [{
+                        label: 'Promedio General (Base 10)',
+                        data: [stats.promedios.sociales, stats.promedios.exactas, stats.promedios.experimentales],
+                        backgroundColor: ['#6c1d45', '#1e3a8a', '#15803d'],
+                        borderRadius: 4
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true, max: 10 } }, animation: { duration: 0 } }
+            });
+
+            // Gráfica Derecha: Materias
+            const ordenadosMaterias = [...stats.rendimientoMaterias].sort((a, b) => b.porcentaje - a.porcentaje);
+            chartMateriasInstance = new Chart(ctxMaterias, {
+                type: 'bar',
+                data: {
+                    labels: ordenadosMaterias.map(m => m.nombre),
+                    datasets: [{
+                        label: '% de Acierto',
+                        data: ordenadosMaterias.map(m => m.porcentaje),
+                        backgroundColor: '#8a2558',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    scales: { x: { beginAtZero: true, max: 100 } },
+                    plugins: { legend: { display: false } },
+                    animation: { duration: 0 }
+                }
+            });
+        } 
+        // ===============================================
+        // MODO 2: VISTA "ZOOM" (Filtrado por 1 Materia)
+        // ===============================================
+        else {
             const selectMateria = document.getElementById('filtroMateria');
             const nombreMateria = selectMateria.options[selectMateria.selectedIndex].text;
-            datosParaGrafica = stats.rendimientoTemas; 
-            tituloGraficaSecundaria = `Desempeño por Temas: ${nombreMateria} (%)`;
+            
+            // Cambiamos dinámicamente los títulos en el HTML
+            tituloGrafica1.innerText = `Desempeño por Temas: ${nombreMateria} (%)`;
+            tituloGrafica2.innerText = `Desempeño por Subtemas: ${nombreMateria} (%)`;
+
+            // Gráfica Izquierda: Temas
+            const ordenadosTemas = [...stats.rendimientoTemas].sort((a, b) => b.porcentaje - a.porcentaje);
+            chartAreasInstance = new Chart(ctxAreas, {
+                type: 'bar',
+                data: {
+                    labels: ordenadosTemas.map(m => m.nombre),
+                    datasets: [{
+                        label: '% de Acierto (Temas)',
+                        data: ordenadosTemas.map(m => m.porcentaje),
+                        backgroundColor: '#1e3a8a', // Azul oscuro para diferenciar
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    scales: { x: { beginAtZero: true, max: 100 } },
+                    plugins: { legend: { display: false } },
+                    animation: { duration: 0 }
+                }
+            });
+
+            // Gráfica Derecha: Subtemas
+            const ordenadosSubtemas = [...stats.rendimientoSubtemas].sort((a, b) => b.porcentaje - a.porcentaje);
+            chartMateriasInstance = new Chart(ctxMaterias, {
+                type: 'bar',
+                data: {
+                    labels: ordenadosSubtemas.map(m => m.nombre),
+                    datasets: [{
+                        label: '% de Acierto (Subtemas)',
+                        data: ordenadosSubtemas.map(m => m.porcentaje),
+                        backgroundColor: '#8a2558', // Guinda IPN
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    scales: { x: { beginAtZero: true, max: 100 } },
+                    plugins: { legend: { display: false } },
+                    animation: { duration: 0 }
+                }
+            });
         }
-
-        const canvasMaterias = document.getElementById('chartMaterias');
-        if(canvasMaterias && canvasMaterias.previousElementSibling) {
-            canvasMaterias.previousElementSibling.innerText = tituloGraficaSecundaria;
-        }
-
-        const ordenados = [...datosParaGrafica].sort((a, b) => b.porcentaje - a.porcentaje);
-        const labelsGrafica = ordenados.map(m => m.nombre);
-        const dataGrafica = ordenados.map(m => m.porcentaje);
-
-        const ctxMaterias = canvasMaterias.getContext('2d');
-        chartMateriasInstance = new Chart(ctxMaterias, {
-            type: 'bar',
-            data: {
-                labels: labelsGrafica,
-                datasets: [{
-                    label: '% de Acierto',
-                    data: dataGrafica,
-                    backgroundColor: '#8a2558',
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                scales: { x: { beginAtZero: true, max: 100 } },
-                plugins: { legend: { display: false } },
-                animation: { duration: 0 }
-            }
-        });
     }
 
     // ========================================================
@@ -171,17 +221,24 @@ document.addEventListener('DOMContentLoaded', () => {
         @media print { .page-break { page-break-before: always; } }
     `;
 
+    // 2A. REPORTE GRÁFICO (AHORA TOTALMENTE DINÁMICO)
     btnPDFGraficas.addEventListener('click', () => {
         if(!chartAreasInstance || !chartMateriasInstance) return;
+        
         const imgAreas = document.getElementById('chartAreas').toDataURL('image/png');
         const imgMaterias = document.getElementById('chartMaterias').toDataURL('image/png');
+        
+        // ¡Magia! El PDF absorbe automáticamente los títulos que la pantalla esté mostrando en ese momento.
+        const tituloPrimeraGrafica = document.getElementById('chartAreas').previousElementSibling.innerText;
         const tituloSegundaGrafica = document.getElementById('chartMaterias').previousElementSibling.innerText;
+        
         const ventanaImpresion = window.open('', '', 'height=800,width=800');
 
         const htmlDocument = `
             <html>
-            <head><title>Reporte Gráfico Ejecutivo</title>
-            <style>${estilosComunesPDF} .chart-container { margin: 10px auto; width: 90%; text-align: center; } img { width: 100%; max-height: 400px; object-fit: contain; border: 1px solid #eee; padding: 10px; border-radius: 6px; }</style>
+            <head>
+                <title>Reporte Gráfico Ejecutivo</title>
+                <style>${estilosComunesPDF} .chart-container { margin: 10px auto; width: 90%; text-align: center; } img { width: 100%; max-height: 400px; object-fit: contain; border: 1px solid #eee; padding: 10px; border-radius: 6px; }</style>
             </head>
             <body>
                 <div class="header">
@@ -189,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="subtitle">Simulador de Inducción - CECyT 14</div>
                     <div class="subtitle"><strong>Grupo:</strong> ${document.getElementById('filtroGrupo').value || 'TODOS'} | <strong>Turno:</strong> ${document.getElementById('filtroTurno').value} | <strong>Materia:</strong> ${document.getElementById('filtroMateria').options[document.getElementById('filtroMateria').selectedIndex].text}</div>
                 </div>
-                <div class="chart-container"><h2 class="section-title">1. Promedio por Áreas de Conocimiento</h2><img src="${imgAreas}" /></div>
+                <div class="chart-container"><h2 class="section-title">1. ${tituloPrimeraGrafica}</h2><img src="${imgAreas}" /></div>
                 <div class="page-break"></div>
                 <div class="chart-container"><h2 class="section-title">2. ${tituloSegundaGrafica}</h2><img src="${imgMaterias}" /></div>
             </body>
