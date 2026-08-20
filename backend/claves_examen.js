@@ -19,8 +19,8 @@ const clavesSociales = {
     "9": {respuesta: "C", materia: "Habilidad del Razonamiento Verbal", tema: "Semántica y Vocabulario", subtema: "Campo semántico"},
     "10": {respuesta: "B", materia: "Habilidad del Razonamiento Verbal", tema: "Tipos de Textos y sus Características", subtema: "Ensayo"},
     "11": {respuesta: "B", materia: "Habilidad del Razonamiento Verbal", tema: "Tipos de Textos y sus Características", subtema: "Mitos"},
-    "12": {respuesta: "D", materia: "Español", tema: "Gramática y Estructura de la Oración", subtema: "Oraciones" },
-    "13": {respuesta: "B", materia: "Español", tema: "Manejo de Información y Redacción", subtema: "Formato APA" },
+    "12": {respuesta: "D", materia: "Español", tema: "Gramática y Estructura de la Oración", subtema: "Oraciones"},
+    "13": {respuesta: "B", materia: "Español", tema: "Manejo de Información y Redacción", subtema: "Formato APA"},
     "14": {respuesta: "D", materia: "Español", tema: "Manejo de Información y Redacción", subtema: "Paráfrasis"},
     "15": {respuesta: "A", materia: "Español", tema: "Manejo de Información y Redacción", subtema: "Ejemplificación"},
     "16": {respuesta: "C", materia: "Español", tema: "Gramática y Estructura de la Oración",  subtema: "Oraciones"},
@@ -93,7 +93,7 @@ const clavesExactas = {
     "32": {respuesta: "C", materia: "Fisíca", tema: "Termodinámica y Fluidos", subtema: "Temperaturas" },
     "33": {respuesta: "D", materia: "Fisíca", tema: "Mecánica (Cinemática y Dinámica)", subtema: "Tipos de Movimiento" },
     "34": {respuesta: "A", materia: "Fisíca", tema: "Termodinámica y Fluidos", subtema: "Unidad de Presión del Sistema Internacional" },
-    "35": {respuesta: "D", materia: "Fisíca", tema: "Óptica y Acústica (Ondas)", subtema: "Características de la Onda" },
+    "35": {respuesta: "D", materia: "Fisíca", tema: "Óptica y Acústica (Ondas)", subtema: "Características de la Onda" }
 };
 
 const clavesExperimentales = {
@@ -132,10 +132,9 @@ const clavesExperimentales = {
     "32": {respuesta: "A", materia: "Geografía", tema: "Medio Ambiente y Sustentabilidad", subtema: "Desarrollo Sustentable"},
     "33": {respuesta: "B", materia: "Geografía", tema: "Geografía Humana y Población", subtema: "Fronteras en México" },
     "34": {respuesta: "A", materia: "Geografía", tema: "Geografía Humana y Población", subtema: "Habitad y Poblaciones" },
-    "35": {respuesta: "C", materia: "Geografía", tema: "Geografía Física y Geosistemas", subtema: "Rotación Terrestre" },
+    "35": {respuesta: "C", materia: "Geografía", tema: "Geografía Física y Geosistemas", subtema: "Rotación Terrestre" }
 };
 
-// Exportamos las tres áreas para que el servidor pueda usarlas
 module.exports = { 
     clavesSociales, 
     clavesExactas, 
