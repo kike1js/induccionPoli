@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `
                 <div style="margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; page-break-inside: avoid;">
                     <div style="background-color: #e5e7eb; padding: 4px 8px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between;">
-                        <span>📚 ${materia.toUpperCase()}</span>
+                        <span>${materia.toUpperCase()}</span>
                         <span>Global: ${porcMat}% (${dataMateria.aciertos}/${dataMateria.total})</span>
                     </div>
                     <table style="margin:0; border:none; width: 100%;">
@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `
                 <div style="margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; page-break-inside: avoid;">
                     <div style="background-color: #e5e7eb; padding: 4px 8px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between;">
-                        <span>📚 ${materia.toUpperCase()}</span>
+                        <span>${materia.toUpperCase()}</span>
                         <span>Total: ${dataMateria.aciertos}/${dataMateria.total}</span>
                     </div>
                     <table style="margin:0; border:none; width: 100%;">
