@@ -313,7 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         html += `
                         <tr>
                             <td style="padding: 2px 6px 2px 20px; border:none; border-bottom: 1px solid #f5f5f5; ${colorSub}">• ${subtema}</td>
-                            <td style="padding: 2px; text-align: center; border:none; border-bottom: 1px solid #f5f5f5; ${colorSub}">${dataSubtema.aciertos}/${dataSubtema.total}</td>
                             <td style="padding: 2px; text-align: center; border:none; border-bottom: 1px solid #f5f5f5; ${colorSub}">${porcSub}%</td>
                         </tr>`;
                     }
