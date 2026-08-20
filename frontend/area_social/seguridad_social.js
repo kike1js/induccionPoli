@@ -15,15 +15,13 @@ let examenCancelado = advertenciasSeguridad >= MAX_ADVERTENCIAS;
 
 domContadorAdv.innerText = advertenciasSeguridad;
 
-// Si ya había reprobado antes de recargar la página, lo bloqueamos.
+// Si ya había reprobado antes de recargar la página, lo bloqueamos de inmediato.
 if (examenCancelado) {
     forzarEnvioExamen();
 }
 
 // ==========================================
 // 1. INICIAR PANTALLA COMPLETA
-// Los navegadores exigen que el usuario dé un clic antes de entrar a fullscreen.
-// Lo activamos en el primer clic que hagan en cualquier parte del examen.
 // ==========================================
 document.body.addEventListener('click', solicitarPantallaCompleta, { once: true });
 
@@ -72,11 +70,21 @@ document.addEventListener("fullscreenchange", () => {
     }
 });
 
+
+// ==========================================
+// NUEVO: BLOQUEO ESTRICTO DE TECLADO
+// ==========================================
+// Esta función anula cualquier pulsación de tecla mientras el castigo está activo.
+function prevenirTeclado(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+}
+
 // ==========================================
 // 3. SISTEMA DE CASTIGOS (UI PERSONALIZADA)
 // ==========================================
 
-// Reemplazamos alert() con un modal HTML para evitar el bug del ciclo infinito
 function mostrarCastigoUI(nivel) {
     const mensaje = nivel === 1 
         ? "Has salido de la pantalla completa o dado clic en otra ventana (pérdida de foco). Te quedan 2 oportunidades."
@@ -84,7 +92,6 @@ function mostrarCastigoUI(nivel) {
 
     const modal = document.createElement('div');
     modal.id = 'modal-seguridad';
-    // Overlay oscuro que bloquea TODO el examen
     modal.className = "fixed inset-0 z-[100] bg-black bg-opacity-95 flex flex-col items-center justify-center p-4 text-center";
     
     modal.innerHTML = `
@@ -92,6 +99,7 @@ function mostrarCastigoUI(nivel) {
             <i class="fas fa-exclamation-triangle text-yellow-500 text-6xl mb-4"></i>
             <h2 class="text-2xl font-bold text-gray-800 mb-2">Advertencia de Seguridad ${nivel}/3</h2>
             <p class="text-gray-600 mb-6 font-medium">${mensaje}</p>
+            <p class="text-xs text-red-500 mb-4 font-bold uppercase"><i class="fas fa-keyboard"></i> Teclado bloqueado temporalmente</p>
             <button id="btn-reanudar" class="w-full px-6 py-3 bg-ipnGuinda text-white font-bold rounded-xl shadow-md hover:bg-ipnGuindaClaro transition">
                 Entendido, volver a Pantalla Completa
             </button>
@@ -100,65 +108,83 @@ function mostrarCastigoUI(nivel) {
     
     document.body.appendChild(modal);
 
-    // Obligamos al alumno a dar clic al botón para regresar a fullscreen
+    // Activamos el bloqueo absoluto de teclado
+    document.addEventListener('keydown', prevenirTeclado, { capture: true });
+
     document.getElementById('btn-reanudar').onclick = () => {
         document.documentElement.requestFullscreen().then(() => {
             modal.remove();
-            // Damos medio segundo de respiro antes de volver a vigilar
+            // Liberamos el teclado
+            document.removeEventListener('keydown', prevenirTeclado, { capture: true });
+            
             setTimeout(() => { bloqueoSistema = false; }, 500);
         }).catch(err => {
-            // Si el navegador bloquea la acción, se lo pedimos de nuevo.
             alert("Debes permitir la pantalla completa para continuar el examen.");
         });
     };
 }
+
 // ==========================================
 // 4. CONTROL EXTERNO DEL PERRO GUARDIÁN
 // ==========================================
-// Esta función permite al motor.js apagar la seguridad cuando el examen
-// termina legalmente (por tiempo o por decisión del usuario).
 function apagarSeguridad() {
     bloqueoSistema = true; 
-    examenCancelado = true; // Engañamos al sistema para que ignore eventos
+    examenCancelado = true; 
     console.log("Seguridad desactivada: El examen está en proceso de entrega legal.");
 }
 
 function forzarEnvioExamen() {
     bloqueoSistema = true;
     
-    // Destruimos el contenido del examen y mostramos la pantalla de bloqueo
+    // 1. Forzamos pantalla completa si se salieron
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(e => console.log("No se pudo forzar fullscreen en castigo"));
+    }
+
+    // 2. Bloqueamos teclado y ratón de fondo
+    document.addEventListener('keydown', prevenirTeclado, { capture: true });
+    
+    // 3. UI Ineludible (Sin botón de regresar)
+    // El pointer-events-none en el div principal evita que den clics rápidos a otras cosas que pudieran existir
     document.body.innerHTML = `
-        <div class="h-screen w-full flex flex-col items-center justify-center bg-gray-100 p-6 text-center z-50 fixed inset-0">
-            <i class="fas fa-ban text-red-600 text-7xl mb-4"></i>
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Examen Cancelado Automáticamente</h1>
-            <p class="text-gray-600 text-lg mb-8 max-w-lg">
-                El sistema ha bloqueado tu acceso por infracción de seguridad (saliste de la pantalla completa o abriste ventanas de consulta repetidas veces). Tu calificación actual ha sido enviada.
+        <div class="h-screen w-full flex flex-col items-center justify-center bg-gray-100 p-6 text-center z-[9999] fixed inset-0 pointer-events-none select-none">
+            <i class="fas fa-ban text-red-600 text-7xl mb-4 animate-pulse"></i>
+            <h1 class="text-3xl md:text-4xl font-black text-gray-800 mb-2 uppercase">Examen Cancelado</h1>
+            <p class="text-gray-600 text-lg mb-8 max-w-lg font-medium">
+                El sistema ha bloqueado tu acceso por infracciones de seguridad.<br>
+                Enviando resultados al servidor...
             </p>
-            <button onclick="window.location.href='../inicio.html'" class="px-8 py-3 bg-ipnGuinda text-white font-bold rounded-xl shadow-md hover:scale-105 transition">
-                Volver al Menú Principal
-            </button>
+            
+            <div class="flex items-center justify-center space-x-2 text-ipnGuinda font-bold text-xl">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Procesando envío obligatorio...</span>
+            </div>
         </div>
     `;
     
-    // Llamamos a la función global que empaqueta y envía los datos (declarada en motor_social.js)
-    // Le damos un retraso de 2 segundos para que el alumno alcance a leer la pantalla de castigo
+    // 4. Ejecutamos el envío final.
+    // Una vez que 'finalizarExamen' en motor_social.js termine de enviarse al backend
+    // y reciba el OK, ESE archivo es el responsable de redirigir a 'inicio.html'.
     setTimeout(() => {
         if (typeof finalizarExamen === "function") {
+            // Pasamos 'trampa' para que el motor sepa por qué se canceló
             finalizarExamen("trampa");
+        } else {
+            // Fallback de seguridad extrema: Si motor_social.js no cargó o falló
+            console.error("Motor de examen no encontrado. Forzando salida.");
+            window.location.href = "../inicio.html";
         }
-    }, 2000);
+    }, 1500); // 1.5 segundos para que vean el mensaje de castigo
 }
 
 // ==========================================
 // MODO DESARROLLADOR: Limpiar memoria rápida
 // ==========================================
 document.addEventListener('keydown', (e) => {
-    // Si presionas Ctrl + Alt + R
+    // Excepción para el modo desarrollador: Solo funciona si NO está bloqueado el teclado
     if (e.ctrlKey && e.altKey && e.key === 'r') {
         localStorage.clear();
         alert("MODO DEV: Memoria limpiada. Reiniciando examen...");
         window.location.reload();
     }
 });
-
-
