@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let datosStats = null; 
     let datosProfesor = null; 
     
-    // Variables para destruir gráficas viejas antes de dibujar nuevas
     let chartAreasInstance = null;
     let chartMateriasInstance = null;
 
@@ -44,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btnGenerar.disabled = true;
             btnGenerar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-            // Petición 1: Estadísticas Globales
             let urlStats = `https://www.bitacora.cecyt14.ipn.mx/api/examen/reporte-estadisticas?`;
             if(fechaInicio) urlStats += `fechaInicio=${fechaInicio}&`;
             if(fechaFin) urlStats += `fechaFin=${fechaFin}&`;
@@ -52,11 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if(inputGrupo) urlStats += `grupo=${inputGrupo}&`;
             if(inputMateria) urlStats += `materia=${inputMateria}`;
             
+            console.log(`[FRONTEND] Solicitando API Stats: ${urlStats}`);
             const resStats = await fetch(urlStats);
             datosStats = await resStats.json(); 
             if (!resStats.ok) throw new Error(datosStats.error || "Error en estadísticas");
 
-            // Petición 2: Reporte de Profesor (Tramposos y Faltantes)
             let urlProfesor = `https://www.bitacora.cecyt14.ipn.mx/api/examen/reporte-profesor?`;
             if(fechaInicio) urlProfesor += `fechaInicio=${fechaInicio}&`;
             if(fechaFin) urlProfesor += `fechaFin=${fechaFin}&`;
@@ -69,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             pintarDashboard(datosStats, datosProfesor);
             
-            // Habilitamos botones PDF
             btnPDF.disabled = false;
             btnPDF.classList.replace('bg-gray-400', 'bg-red-600');
             btnPDF.classList.replace('cursor-not-allowed', 'hover:bg-red-700');
@@ -96,11 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('kpiFaltantes').innerText = prof.totalFaltantes;
         document.getElementById('kpiTramposos').innerText = prof.totalTramposos; 
 
-        // Destruir gráficas previas
         if (chartAreasInstance) chartAreasInstance.destroy();
         if (chartMateriasInstance) chartMateriasInstance.destroy();
 
-        // Gráfica de Áreas
         const ctxAreas = document.getElementById('chartAreas').getContext('2d');
         chartAreasInstance = new Chart(ctxAreas, {
             type: 'bar',
@@ -116,15 +111,11 @@ document.addEventListener('DOMContentLoaded', () => {
             options: { scales: { y: { beginAtZero: true, max: 10 } }, animation: { duration: 0 } }
         });
 
-        // ===============================================
-        // MAGIA VISUAL: GRAFICA DINÁMICA DE MATERIAS/TEMAS
-        // ===============================================
         let datosParaGrafica = stats.rendimientoMaterias;
         let tituloGraficaSecundaria = 'Desempeño General por Materias (%)';
         
         const filtroMateriaVal = document.getElementById('filtroMateria').value;
         
-        // Si aplicaron un filtro de materia, mostrar los TEMAS es más útil
         if (filtroMateriaVal !== 'TODAS') {
             const selectMateria = document.getElementById('filtroMateria');
             const nombreMateria = selectMateria.options[selectMateria.selectedIndex].text;
@@ -132,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tituloGraficaSecundaria = `Desempeño por Temas: ${nombreMateria} (%)`;
         }
 
-        // Actualizar el título h3 que está justo antes del canvas
         const canvasMaterias = document.getElementById('chartMaterias');
         if(canvasMaterias && canvasMaterias.previousElementSibling) {
             canvasMaterias.previousElementSibling.innerText = tituloGraficaSecundaria;
@@ -181,26 +171,17 @@ document.addEventListener('DOMContentLoaded', () => {
         @media print { .page-break { page-break-before: always; } }
     `;
 
-    // 2A. REPORTE GRÁFICO EJECUTIVO
     btnPDFGraficas.addEventListener('click', () => {
         if(!chartAreasInstance || !chartMateriasInstance) return;
         const imgAreas = document.getElementById('chartAreas').toDataURL('image/png');
         const imgMaterias = document.getElementById('chartMaterias').toDataURL('image/png');
-        
-        // Obtenemos el título dinámico para el PDF
         const tituloSegundaGrafica = document.getElementById('chartMaterias').previousElementSibling.innerText;
-        
         const ventanaImpresion = window.open('', '', 'height=800,width=800');
 
         const htmlDocument = `
             <html>
-            <head>
-                <title>Reporte Gráfico Ejecutivo</title>
-                <style>
-                    ${estilosComunesPDF}
-                    .chart-container { margin: 10px auto; width: 90%; text-align: center; }
-                    img { width: 100%; max-height: 400px; object-fit: contain; border: 1px solid #eee; padding: 10px; border-radius: 6px; }
-                </style>
+            <head><title>Reporte Gráfico Ejecutivo</title>
+            <style>${estilosComunesPDF} .chart-container { margin: 10px auto; width: 90%; text-align: center; } img { width: 100%; max-height: 400px; object-fit: contain; border: 1px solid #eee; padding: 10px; border-radius: 6px; }</style>
             </head>
             <body>
                 <div class="header">
@@ -208,16 +189,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="subtitle">Simulador de Inducción - CECyT 14</div>
                     <div class="subtitle"><strong>Grupo:</strong> ${document.getElementById('filtroGrupo').value || 'TODOS'} | <strong>Turno:</strong> ${document.getElementById('filtroTurno').value} | <strong>Materia:</strong> ${document.getElementById('filtroMateria').options[document.getElementById('filtroMateria').selectedIndex].text}</div>
                 </div>
-
-                <div class="chart-container">
-                    <h2 class="section-title" style="text-align:center;">1. Promedio por Áreas de Conocimiento</h2>
-                    <img src="${imgAreas}" />
-                </div>
+                <div class="chart-container"><h2 class="section-title">1. Promedio por Áreas de Conocimiento</h2><img src="${imgAreas}" /></div>
                 <div class="page-break"></div>
-                <div class="chart-container">
-                    <h2 class="section-title" style="text-align:center;">2. ${tituloSegundaGrafica}</h2>
-                    <img src="${imgMaterias}" />
-                </div>
+                <div class="chart-container"><h2 class="section-title">2. ${tituloSegundaGrafica}</h2><img src="${imgMaterias}" /></div>
             </body>
             </html>
         `;
@@ -227,20 +201,31 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { ventanaImpresion.print(); ventanaImpresion.close(); }, 500);
     });
 
-    // 2B. REPORTE ANALÍTICO TABULAR (Árbol con Porcentajes)
+    // 2B. REPORTE ANALÍTICO TABULAR GLOBAL
     btnPDF.addEventListener('click', () => {
         if(!datosStats || !datosProfesor) return;
         const ventanaImpresion = window.open('', '', 'height=800,width=800');
         
         const crearArbolGlobal = (arbol) => {
             const filtroMateriaVal = document.getElementById('filtroMateria').value;
+            console.log(`[PDF GLOBAL] Generando árbol... Filtro activo: ${filtroMateriaVal}`);
+            
             let html = `<h2 class="section-title">Análisis de Precisión (Materia ➔ Tema ➔ Subtema)</h2>`;
             
             for (const [materia, dataMateria] of Object.entries(arbol)) {
-                if(dataMateria.total === 0) continue;
+                if(dataMateria.total === 0) {
+                    console.log(`[PDF GLOBAL] Omitiendo ${materia} (0 reactivos intentados)`);
+                    continue;
+                }
                 
-                // VALIDACIÓN EXTRA FRONTAL PARA ASEGURAR EL FILTRADO
-                if (filtroMateriaVal !== 'TODAS' && normalizarTexto(materia) !== normalizarTexto(filtroMateriaVal)) continue;
+                // VALIDACIÓN
+                const materiaNormalizada = normalizarTexto(materia);
+                const filtroNormalizado = normalizarTexto(filtroMateriaVal);
+                if (filtroMateriaVal !== 'TODAS' && materiaNormalizada !== filtroNormalizado) {
+                    console.log(`[PDF GLOBAL] Bloqueado por filtro: ${materiaNormalizada} !== ${filtroNormalizado}`);
+                    continue;
+                }
+                console.log(`[PDF GLOBAL] Pasó el filtro: ${materia}`);
 
                 const porcMat = ((dataMateria.aciertos / dataMateria.total) * 100).toFixed(1);
                 html += `
@@ -307,35 +292,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h1>Reporte Directivo Analítico</h1>
                     <div class="subtitle">Turno: ${datosProfesor.filtroTurno} | Grupo: ${datosProfesor.filtroGrupo} | Materia: ${document.getElementById('filtroMateria').options[document.getElementById('filtroMateria').selectedIndex].text}</div>
                 </div>
-
                 <div style="display: flex; justify-content: space-between; gap: 10px;">
                     <div style="width: 50%;">
                         <h2 class="section-title">1. Desempeño por Área (Base 10)</h2>
-                        <table>
-                            <tr><th>Área</th><th>Promedio</th></tr>
-                            <tr><td>Sociales</td><td>${datosStats.promedios.sociales}</td></tr>
-                            <tr><td>Exactas</td><td>${datosStats.promedios.exactas}</td></tr>
-                            <tr><td>Experimentales</td><td>${datosStats.promedios.experimentales}</td></tr>
-                        </table>
+                        <table><tr><th>Área</th><th>Promedio</th></tr>
+                        <tr><td>Sociales</td><td>${datosStats.promedios.sociales}</td></tr>
+                        <tr><td>Exactas</td><td>${datosStats.promedios.exactas}</td></tr>
+                        <tr><td>Experimentales</td><td>${datosStats.promedios.experimentales}</td></tr></table>
                     </div>
                     <div style="width: 50%;">
                         <h2 class="section-title">2. Participación</h2>
-                        <table>
-                            <tr><td>Evaluados Totales</td><td style="font-weight:bold;">${datosProfesor.totalAlumnosConsultados}</td></tr>
-                            <tr><td>Exámenes Entregados</td><td style="font-weight:bold;">${datosStats.participacion.totalExamenes}</td></tr>
-                            <tr><td>Alumnos Completos</td><td style="font-weight:bold;">${datosStats.participacion.alumnosCompletaronTodo}</td></tr>
-                        </table>
+                        <table><tr><td>Evaluados Totales</td><td style="font-weight:bold;">${datosProfesor.totalAlumnosConsultados}</td></tr>
+                        <tr><td>Exámenes Entregados</td><td style="font-weight:bold;">${datosStats.participacion.totalExamenes}</td></tr>
+                        <tr><td>Alumnos Completos</td><td style="font-weight:bold;">${datosStats.participacion.alumnosCompletaronTodo}</td></tr></table>
                     </div>
                 </div>
-
                 ${crearArbolGlobal(datosStats.arbolJerarquico)}
-
-                <h2 class="section-title" style="color:#ca8a04;">Alumnos Incompletos</h2>
-                ${faltantesHTML}
-
-                <h2 class="section-title" style="color:#dc2626;">Infracciones y Fraudes</h2>
-                ${trampososHTML}
-                
+                <h2 class="section-title" style="color:#ca8a04;">Alumnos Incompletos</h2>${faltantesHTML}
+                <h2 class="section-title" style="color:#dc2626;">Infracciones y Fraudes</h2>${trampososHTML}
                 <div class="footer">Generado automáticamente por PoliAprende. ${new Date().toLocaleString()}</div>
             </body>
             </html>
@@ -347,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ========================================================
-    // 3. BÚSQUEDA INDIVIDUAL Y PDF (Solo Fracciones Acierto/Total)
+    // 3. BÚSQUEDA INDIVIDUAL Y PDF
     // ========================================================
     const formIndividual = document.getElementById('formIndividual');
     const btnPDFIndividual = document.getElementById('btnPDFIndividual');
@@ -367,6 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnPDFIndividual.classList.replace('bg-red-600', 'bg-gray-400');
             btnPDFIndividual.classList.add('cursor-not-allowed');
 
+            console.log(`[FRONTEND] Buscando individuo: ${boleta}`);
             const respuesta = await fetch(`https://www.bitacora.cecyt14.ipn.mx/api/examen/reporte-individual/${boleta}`);
             const data = await respuesta.json();
 
@@ -397,13 +372,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const crearArbolIndividual = (arbol) => {
             const filtroMateriaVal = document.getElementById('filtroMateria').value;
+            console.log(`[PDF INDIVIDUAL] Generando árbol... Filtro activo: ${filtroMateriaVal}`);
+
             let html = `<h2 class="section-title">Análisis de Desempeño por Materia, Tema y Subtema</h2>`;
             
             for (const [materia, dataMateria] of Object.entries(arbol)) {
                 if(dataMateria.total === 0) continue;
                 
-                // ¡AQUÍ ESTÁ LA MAGIA INDIVIDUAL! Filtramos el árbol de resultados según el selector global
-                if (filtroMateriaVal !== 'TODAS' && normalizarTexto(materia) !== normalizarTexto(filtroMateriaVal)) continue;
+                const materiaNormalizada = normalizarTexto(materia);
+                const filtroNormalizado = normalizarTexto(filtroMateriaVal);
+                if (filtroMateriaVal !== 'TODAS' && materiaNormalizada !== filtroNormalizado) {
+                    console.log(`[PDF INDIVIDUAL] Bloqueado por filtro: ${materiaNormalizada} !== ${filtroNormalizado}`);
+                    continue;
+                }
+                console.log(`[PDF INDIVIDUAL] Pasó el filtro: ${materia}`);
 
                 html += `
                 <div style="margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; page-break-inside: avoid;">
@@ -449,13 +431,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h1>Acuse de Resultados Académicos</h1>
                     <div class="subtitle">Simulador de Examen de Inducción | CECyT 14</div>
                 </div>
-
                 <div class="student-info">
                     <strong>Alumno:</strong> ${d.nombre} <br>
                     <strong>Boleta:</strong> ${d.boleta} | <strong>CURP:</strong> ${d.curp} <br>
                     <strong>Turno:</strong> ${d.turno} | <strong>Grupo:</strong> ${d.grupo}
                 </div>
-
                 <h2 class="section-title">Calificaciones de Área (Base 10)</h2>
                 <table>
                     <tr><th>Área de Conocimiento</th><th>Calificación Obtenida</th></tr>
@@ -463,9 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <tr><td>Ciencias Exactas</td><td>${d.areas.exactas.calificacion} ${d.areas.exactas.anulado ? '<span class="badge bg-red">ANULADO</span>' : ''}</td></tr>
                     <tr><td>Ciencias Experimentales</td><td>${d.areas.experimentales.calificacion} ${d.areas.experimentales.anulado ? '<span class="badge bg-red">ANULADO</span>' : ''}</td></tr>
                 </table>
-
                 ${crearArbolIndividual(d.arbolJerarquico)}
-
                 <div class="footer">Documento de carácter diagnóstico generado por PoliAprende. ${new Date().toLocaleString()}</div>
             </body>
             </html>

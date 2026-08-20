@@ -433,21 +433,34 @@ app.post('/api/usuarios/generador', async (req, res) => {
 
 
 
+// ==========================================
+// FUNCIÓN MÁGICA: ENSAMBLADOR JERÁRQUICO
+// ==========================================
 const normalizeString = (str) => {
     if (!str) return "";
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 };
 
 function construirArbolJerarquico(statsPlanosSubtemas, materiaFiltro = null) {
-    const todasLasClaves = { ...clavesSociales, ...clavesExactas, ...clavesExperimentales };
+    // 🔥 SOLUCIÓN AL BUG DE LAS 4 MATERIAS: 
+    // Convertimos los objetos a Arreglos antes de unirlos para evitar que se sobreescriban los IDs "0", "1", etc.
+    const todasLasClaves = [
+        ...Object.values(clavesSociales),
+        ...Object.values(clavesExactas),
+        ...Object.values(clavesExperimentales)
+    ];
+    
+    console.log(`[BACKEND] Total de reactivos en memoria: ${todasLasClaves.length}`);
+    console.log(`[BACKEND] Iniciando construcción del árbol. Filtro solicitado: ${materiaFiltro || 'TODAS'}`);
+
     const arbol = {};
 
-    Object.values(todasLasClaves).forEach(reactivo => {
+    // 1. Armamos el esqueleto vacío del árbol
+    todasLasClaves.forEach(reactivo => {
         const mat = reactivo.materia || "General";
         const tem = reactivo.tema || "General";
         const sub = reactivo.subtema || "General";
 
-        // Filtro robusto usando el normalizador
         if (materiaFiltro && materiaFiltro !== 'TODAS' && normalizeString(mat) !== normalizeString(materiaFiltro)) return;
 
         if (!arbol[mat]) arbol[mat] = { aciertos: 0, total: 0, temas: {} };
@@ -455,8 +468,10 @@ function construirArbolJerarquico(statsPlanosSubtemas, materiaFiltro = null) {
         if (!arbol[mat].temas[tem].subtemas[sub]) arbol[mat].temas[tem].subtemas[sub] = { aciertos: 0, total: 0 };
     });
 
+    // 2. Llenamos el árbol cruzando con las estadísticas del alumno/grupo
     for (const [subtemaNombre, stats] of Object.entries(statsPlanosSubtemas)) {
-        const reactivoRef = Object.values(todasLasClaves).find(r => r.subtema === subtemaNombre);
+        const reactivoRef = todasLasClaves.find(r => r.subtema === subtemaNombre);
+        
         if (reactivoRef) {
             const mat = reactivoRef.materia;
             const tem = reactivoRef.tema;
@@ -474,8 +489,12 @@ function construirArbolJerarquico(statsPlanosSubtemas, materiaFiltro = null) {
                 arbol[mat].aciertos += stats.aciertos;
                 arbol[mat].total += stats.total;
             }
+        } else {
+            console.log(`[BACKEND-ADVERTENCIA] No se encontró clave para el subtema: ${subtemaNombre}`);
         }
     }
+    
+    console.log(`[BACKEND] Árbol final generado con las materias:`, Object.keys(arbol));
     return arbol;
 }
 
