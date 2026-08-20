@@ -108,19 +108,40 @@ document.addEventListener('DOMContentLoaded', () => {
             options: { scales: { y: { beginAtZero: true, max: 10 } }, animation: { duration: 0 } }
         });
 
-        // Gráfica de Materias
-        const materiasOrdenadas = [...stats.rendimientoMaterias].sort((a, b) => b.porcentaje - a.porcentaje);
-        const labelsMaterias = materiasOrdenadas.map(m => m.nombre);
-        const dataMaterias = materiasOrdenadas.map(m => m.porcentaje);
+        // ===============================================
+        // MAGIA VISUAL: GRAFICA DINÁMICA DE MATERIAS/TEMAS
+        // ===============================================
+        let datosParaGrafica = stats.rendimientoMaterias;
+        let tituloGraficaSecundaria = 'Desempeño General por Materias (%)';
+        
+        const filtroMateriaVal = document.getElementById('filtroMateria').value;
+        
+        // Si aplicaron un filtro de materia, mostrar los TEMAS es más útil
+        if (filtroMateriaVal !== 'TODAS') {
+            const selectMateria = document.getElementById('filtroMateria');
+            const nombreMateria = selectMateria.options[selectMateria.selectedIndex].text;
+            datosParaGrafica = stats.rendimientoTemas; 
+            tituloGraficaSecundaria = `Desempeño por Temas: ${nombreMateria} (%)`;
+        }
 
-        const ctxMaterias = document.getElementById('chartMaterias').getContext('2d');
+        // Actualizar el título h3 que está justo antes del canvas
+        const canvasMaterias = document.getElementById('chartMaterias');
+        if(canvasMaterias && canvasMaterias.previousElementSibling) {
+            canvasMaterias.previousElementSibling.innerText = tituloGraficaSecundaria;
+        }
+
+        const ordenados = [...datosParaGrafica].sort((a, b) => b.porcentaje - a.porcentaje);
+        const labelsGrafica = ordenados.map(m => m.nombre);
+        const dataGrafica = ordenados.map(m => m.porcentaje);
+
+        const ctxMaterias = canvasMaterias.getContext('2d');
         chartMateriasInstance = new Chart(ctxMaterias, {
             type: 'bar',
             data: {
-                labels: labelsMaterias,
+                labels: labelsGrafica,
                 datasets: [{
-                    label: '% de Acierto Global',
-                    data: dataMaterias,
+                    label: '% de Acierto',
+                    data: dataGrafica,
                     backgroundColor: '#8a2558',
                     borderRadius: 4
                 }]
@@ -157,6 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!chartAreasInstance || !chartMateriasInstance) return;
         const imgAreas = document.getElementById('chartAreas').toDataURL('image/png');
         const imgMaterias = document.getElementById('chartMaterias').toDataURL('image/png');
+        
+        // Obtenemos el título dinámico para el PDF
+        const tituloSegundaGrafica = document.getElementById('chartMaterias').previousElementSibling.innerText;
+        
         const ventanaImpresion = window.open('', '', 'height=800,width=800');
 
         const htmlDocument = `
@@ -173,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="header">
                     <h1>Reporte Gráfico Ejecutivo</h1>
                     <div class="subtitle">Simulador de Inducción - CECyT 14</div>
-                    <div class="subtitle"><strong>Grupo:</strong> ${document.getElementById('filtroGrupo').value || 'TODOS'} | <strong>Turno:</strong> ${document.getElementById('filtroTurno').value} | <strong>Materia:</strong> ${document.getElementById('filtroMateria').value}</div>
+                    <div class="subtitle"><strong>Grupo:</strong> ${document.getElementById('filtroGrupo').value || 'TODOS'} | <strong>Turno:</strong> ${document.getElementById('filtroTurno').value} | <strong>Materia:</strong> ${document.getElementById('filtroMateria').options[document.getElementById('filtroMateria').selectedIndex].text}</div>
                 </div>
 
                 <div class="chart-container">
@@ -182,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="page-break"></div>
                 <div class="chart-container">
-                    <h2 class="section-title" style="text-align:center;">2. Desempeño General por Materias (%)</h2>
+                    <h2 class="section-title" style="text-align:center;">2. ${tituloSegundaGrafica}</h2>
                     <img src="${imgMaterias}" />
                 </div>
             </body>
@@ -199,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!datosStats || !datosProfesor) return;
         const ventanaImpresion = window.open('', '', 'height=800,width=800');
         
-        // Constructor Ultra-Compacto del Árbol Grupal (Con %)
         const crearArbolGlobal = (arbol) => {
             let html = `<h2 class="section-title">Análisis de Precisión (Materia ➔ Tema ➔ Subtema)</h2>`;
             for (const [materia, dataMateria] of Object.entries(arbol)) {
@@ -208,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `
                 <div style="margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; page-break-inside: avoid;">
                     <div style="background-color: #e5e7eb; padding: 4px 8px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between;">
-                        <span>📚 ${materia.toUpperCase()}</span>
+                        <span>${materia.toUpperCase()}</span>
                         <span>Global: ${porcMat}% (${dataMateria.aciertos}/${dataMateria.total})</span>
                     </div>
                     <table style="margin:0; border:none; width: 100%;">
@@ -245,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return html;
         };
 
-        // Tablas Faltantes y Tramposos compactas
         let faltantesHTML = datosProfesor.listaFaltantes.length === 0 
             ? '<p style="color:green; text-align:center; font-size: 11px;">✓ Todos los alumnos han completado sus exámenes.</p>' 
             : `<table><tr style="background:#fefce8;"><th style="background:#fefce8;">Boleta/Nombre</th><th style="background:#fefce8;">Sociales</th><th style="background:#fefce8;">Exactas</th><th style="background:#fefce8;">Exp.</th></tr>
@@ -268,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <body>
                 <div class="header">
                     <h1>Reporte Directivo Analítico</h1>
-                    <div class="subtitle">Turno: ${datosProfesor.filtroTurno} | Grupo: ${datosProfesor.filtroGrupo} | Materia: ${document.getElementById('filtroMateria').value}</div>
+                    <div class="subtitle">Turno: ${datosProfesor.filtroTurno} | Grupo: ${datosProfesor.filtroGrupo} | Materia: ${document.getElementById('filtroMateria').options[document.getElementById('filtroMateria').selectedIndex].text}</div>
                 </div>
 
                 <div style="display: flex; justify-content: space-between; gap: 10px;">
@@ -358,7 +381,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const d = datosAlumnoActual;
         const ventanaImpresion = window.open('', '', 'height=800,width=800');
         
-        // Constructor Ultra-Compacto del Árbol Individual (SÓLO FRACCIONES ACIERTOS/TOTAL)
         const crearArbolIndividual = (arbol) => {
             let html = `<h2 class="section-title">Análisis de Desempeño por Materia, Tema y Subtema</h2>`;
             for (const [materia, dataMateria] of Object.entries(arbol)) {
@@ -366,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `
                 <div style="margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; page-break-inside: avoid;">
                     <div style="background-color: #e5e7eb; padding: 4px 8px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between;">
-                        <span>📚 ${materia.toUpperCase()}</span>
+                        <span>${materia.toUpperCase()}</span>
                         <span>Total: ${dataMateria.aciertos}/${dataMateria.total}</span>
                     </div>
                     <table style="margin:0; border:none; width: 100%;">

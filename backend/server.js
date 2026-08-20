@@ -433,43 +433,37 @@ app.post('/api/usuarios/generador', async (req, res) => {
 
 
 
-// ==========================================
-// FUNCIÓN MÁGICA: ENSAMBLADOR JERÁRQUICO
-// ==========================================
-// Esta función lee los subtemas planos y los convierte en un árbol Materia -> Tema -> Subtema
+const normalizeString = (str) => {
+    if (!str) return "";
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+};
+
 function construirArbolJerarquico(statsPlanosSubtemas, materiaFiltro = null) {
-    // 1. Unimos todas las claves de tu bóveda para tener el mapa completo
     const todasLasClaves = { ...clavesSociales, ...clavesExactas, ...clavesExperimentales };
-    
-    // 2. Creamos el árbol vacío
     const arbol = {};
 
-    // 3. Recorremos todas las claves para armar la estructura
     Object.values(todasLasClaves).forEach(reactivo => {
         const mat = reactivo.materia || "General";
         const tem = reactivo.tema || "General";
         const sub = reactivo.subtema || "General";
 
-        // Si el profesor filtró por una materia específica, ignoramos las demás
-        if (materiaFiltro && materiaFiltro !== 'TODAS' && mat.toUpperCase() !== materiaFiltro.toUpperCase()) return;
+        // Filtro robusto usando el normalizador
+        if (materiaFiltro && materiaFiltro !== 'TODAS' && normalizeString(mat) !== normalizeString(materiaFiltro)) return;
 
         if (!arbol[mat]) arbol[mat] = { aciertos: 0, total: 0, temas: {} };
         if (!arbol[mat].temas[tem]) arbol[mat].temas[tem] = { aciertos: 0, total: 0, subtemas: {} };
         if (!arbol[mat].temas[tem].subtemas[sub]) arbol[mat].temas[tem].subtemas[sub] = { aciertos: 0, total: 0 };
     });
 
-    // 4. Llenamos el árbol con los datos reales de los alumnos
     for (const [subtemaNombre, stats] of Object.entries(statsPlanosSubtemas)) {
-        // Buscamos a qué materia y tema pertenece este subtema en las claves
         const reactivoRef = Object.values(todasLasClaves).find(r => r.subtema === subtemaNombre);
         if (reactivoRef) {
             const mat = reactivoRef.materia;
             const tem = reactivoRef.tema;
             
-            // Si hay filtro de materia, saltamos los que no coincidan
-            if (materiaFiltro && materiaFiltro !== 'TODAS' && mat.toUpperCase() !== materiaFiltro.toUpperCase()) continue;
+            // Filtro robusto usando el normalizador
+            if (materiaFiltro && materiaFiltro !== 'TODAS' && normalizeString(mat) !== normalizeString(materiaFiltro)) continue;
 
-            // Inyectamos los aciertos y sumamos en cadena (hacia arriba)
             if(arbol[mat] && arbol[mat].temas[tem] && arbol[mat].temas[tem].subtemas[subtemaNombre]) {
                 arbol[mat].temas[tem].subtemas[subtemaNombre].aciertos += stats.aciertos;
                 arbol[mat].temas[tem].subtemas[subtemaNombre].total += stats.total;
@@ -482,17 +476,14 @@ function construirArbolJerarquico(statsPlanosSubtemas, materiaFiltro = null) {
             }
         }
     }
-
     return arbol;
 }
-
 
 // =======================================================
 // 1. REPORTE ESTADÍSTICO GLOBAL (Con Árbol Jerárquico y Filtro Materia/Grupo)
 // =======================================================
 app.get('/api/examen/reporte-estadisticas', async (req, res) => {
     try {
-        // ¡NUEVO!: Recibimos el parámetro "materia" y "grupo"
         const { fechaInicio, fechaFin, turno, materia, grupo } = req.query;
         const query = {};
 
@@ -502,7 +493,6 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
             query.fecha_intento = { $gte: start, $lte: end };
         }
 
-        // Pre-filtrar usuarios por turno y GRUPO para cruzar con los intentos
         let usuariosFilter = { rol: 'alumno' };
         if (turno && turno !== 'TODOS') {
             usuariosFilter.turno = turno.toUpperCase().trim();
@@ -542,7 +532,6 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
             else if (area === 'ciencias exactas') { totalExactas++; sumaExactas += calif; usuariosPorArea.exactas.add(userIdStr); }
             else if (area === 'ciencias experimentales') { totalExperimentales++; sumaExperimentales += calif; usuariosPorArea.experimentales.add(userIdStr); }
 
-            // Acumular Planos
             const acumular = (fuente, destino) => {
                 if (!fuente) return;
                 for (const [key, stats] of Object.entries(fuente)) {
@@ -567,6 +556,26 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
         // ==========================================
         const arbolEstructurado = construirArbolJerarquico(subtemasStats, materia);
 
+        // ¡LA SOLUCIÓN AL BUG ESTÁ AQUÍ!
+        // Reconstruimos los planos a partir del árbol para que las gráficas respeten el filtro.
+        if (materia && materia !== 'TODAS') {
+            materiasStats = {};
+            temasStats = {};
+            subtemasStats = {};
+
+            for (const [mat, dataMat] of Object.entries(arbolEstructurado)) {
+                if (dataMat.total > 0) materiasStats[mat] = { aciertos: dataMat.aciertos, total: dataMat.total };
+                
+                for (const [tem, dataTem] of Object.entries(dataMat.temas)) {
+                    if (dataTem.total > 0) temasStats[tem] = { aciertos: dataTem.aciertos, total: dataTem.total };
+                    
+                    for (const [sub, dataSub] of Object.entries(dataTem.subtemas)) {
+                        if (dataSub.total > 0) subtemasStats[sub] = { aciertos: dataSub.aciertos, total: dataSub.total };
+                    }
+                }
+            }
+        }
+
         const formatearStats = (obj) => Object.keys(obj).map(nombre => {
             const stats = obj[nombre];
             const porcentaje = stats.total > 0 ? ((stats.aciertos / stats.total) * 100) : 0;
@@ -590,13 +599,13 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
             rendimientoMaterias: formatearStats(materiasStats),
             rendimientoTemas: formatearStats(temasStats),
             rendimientoSubtemas: formatearStats(subtemasStats),
-            arbolJerarquico: arbolEstructurado // ¡EL ÁRBOL LISTO PARA EL FRONTEND!
+            arbolJerarquico: arbolEstructurado
         });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: "Error interno" });
     }
 });
-
 
 
 // =======================================================

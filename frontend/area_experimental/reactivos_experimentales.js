@@ -163,7 +163,7 @@
             {
                 id_reactivo: 14,
                 materia: "Biología",
-                pregunta: "Ordena los reinos del menos complejo al más complejo",
+                pregunta: "Ordena los reinos del menos complejo al más complejo.",
                 imagen_pregunta: "../img/biología/reactivo14.png",
                 opciones: [
                     { letra: "A", texto: "1, 4, 3, 2" },
@@ -283,7 +283,7 @@
             {
                 id_reactivo: 24,
                 materia: "Biología",
-                pregunta: "La reproducción celular a través de la _______ es capaz de generar _____",
+                pregunta: "La reproducción celular a través de la _______ es capaz de generar ______.",
                 imagen_pregunta: false,
                 opciones: [
                     { letra: "A", texto: "mitosis - continuidad genética" },
@@ -343,7 +343,7 @@
             {
                 id_reactivo: 29,
                 materia: "Geografía",
-                pregunta: "México es considerado un país _______ debido a su diversidad étnic",
+                pregunta: "México es considerado un país _______ debido a su diversidad étnica.",
                 imagen_pregunta: false,
                 opciones: [
                     { letra: "A", texto: "multicultural" },
