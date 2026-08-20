@@ -431,10 +431,69 @@ app.post('/api/usuarios/generador', async (req, res) => {
     }
 });
 
-// REPORTE ESTADÍSTICO GLOBAL (Con Temas, Subtemas y Turno)
+
+
+// ==========================================
+// FUNCIÓN MÁGICA: ENSAMBLADOR JERÁRQUICO
+// ==========================================
+// Esta función lee los subtemas planos y los convierte en un árbol Materia -> Tema -> Subtema
+function construirArbolJerarquico(statsPlanosSubtemas, materiaFiltro = null) {
+    // 1. Unimos todas las claves de tu bóveda para tener el mapa completo
+    const todasLasClaves = { ...clavesSociales, ...clavesExactas, ...clavesExperimentales };
+    
+    // 2. Creamos el árbol vacío
+    const arbol = {};
+
+    // 3. Recorremos todas las claves para armar la estructura
+    Object.values(todasLasClaves).forEach(reactivo => {
+        const mat = reactivo.materia || "General";
+        const tem = reactivo.tema || "General";
+        const sub = reactivo.subtema || "General";
+
+        // Si el profesor filtró por una materia específica, ignoramos las demás
+        if (materiaFiltro && materiaFiltro !== 'TODAS' && mat.toUpperCase() !== materiaFiltro.toUpperCase()) return;
+
+        if (!arbol[mat]) arbol[mat] = { aciertos: 0, total: 0, temas: {} };
+        if (!arbol[mat].temas[tem]) arbol[mat].temas[tem] = { aciertos: 0, total: 0, subtemas: {} };
+        if (!arbol[mat].temas[tem].subtemas[sub]) arbol[mat].temas[tem].subtemas[sub] = { aciertos: 0, total: 0 };
+    });
+
+    // 4. Llenamos el árbol con los datos reales de los alumnos
+    for (const [subtemaNombre, stats] of Object.entries(statsPlanosSubtemas)) {
+        // Buscamos a qué materia y tema pertenece este subtema en las claves
+        const reactivoRef = Object.values(todasLasClaves).find(r => r.subtema === subtemaNombre);
+        if (reactivoRef) {
+            const mat = reactivoRef.materia;
+            const tem = reactivoRef.tema;
+            
+            // Si hay filtro de materia, saltamos los que no coincidan
+            if (materiaFiltro && materiaFiltro !== 'TODAS' && mat.toUpperCase() !== materiaFiltro.toUpperCase()) continue;
+
+            // Inyectamos los aciertos y sumamos en cadena (hacia arriba)
+            if(arbol[mat] && arbol[mat].temas[tem] && arbol[mat].temas[tem].subtemas[subtemaNombre]) {
+                arbol[mat].temas[tem].subtemas[subtemaNombre].aciertos += stats.aciertos;
+                arbol[mat].temas[tem].subtemas[subtemaNombre].total += stats.total;
+                
+                arbol[mat].temas[tem].aciertos += stats.aciertos;
+                arbol[mat].temas[tem].total += stats.total;
+                
+                arbol[mat].aciertos += stats.aciertos;
+                arbol[mat].total += stats.total;
+            }
+        }
+    }
+
+    return arbol;
+}
+
+
+// =======================================================
+// 1. REPORTE ESTADÍSTICO GLOBAL (Con Árbol Jerárquico y Filtro Materia/Grupo)
+// =======================================================
 app.get('/api/examen/reporte-estadisticas', async (req, res) => {
     try {
-        const { fechaInicio, fechaFin, turno } = req.query;
+        // ¡NUEVO!: Recibimos el parámetro "materia" y "grupo"
+        const { fechaInicio, fechaFin, turno, materia, grupo } = req.query;
         const query = {};
 
         if (fechaInicio && fechaFin) {
@@ -443,11 +502,15 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
             query.fecha_intento = { $gte: start, $lte: end };
         }
 
-        // Pre-filtrar usuarios por turno para cruzar con los intentos
+        // Pre-filtrar usuarios por turno y GRUPO para cruzar con los intentos
         let usuariosFilter = { rol: 'alumno' };
         if (turno && turno !== 'TODOS') {
             usuariosFilter.turno = turno.toUpperCase().trim();
         }
+        if (grupo) {
+            usuariosFilter.grupo = grupo.toUpperCase().trim();
+        }
+        
         const usuariosValidos = await Usuario.find(usuariosFilter).select('_id');
         const usuariosIds = usuariosValidos.map(u => u._id.toString());
 
@@ -479,7 +542,7 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
             else if (area === 'ciencias exactas') { totalExactas++; sumaExactas += calif; usuariosPorArea.exactas.add(userIdStr); }
             else if (area === 'ciencias experimentales') { totalExperimentales++; sumaExperimentales += calif; usuariosPorArea.experimentales.add(userIdStr); }
 
-            // Acumular Materias, Temas y Subtemas
+            // Acumular Planos
             const acumular = (fuente, destino) => {
                 if (!fuente) return;
                 for (const [key, stats] of Object.entries(fuente)) {
@@ -498,6 +561,11 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
         usuariosSet.forEach(userId => {
             if (usuariosPorArea.sociales.has(userId) && usuariosPorArea.exactas.has(userId) && usuariosPorArea.experimentales.has(userId)) alumnosCompletos++;
         });
+
+        // ==========================================
+        // CREAMOS EL ÁRBOL FILTRADO
+        // ==========================================
+        const arbolEstructurado = construirArbolJerarquico(subtemasStats, materia);
 
         const formatearStats = (obj) => Object.keys(obj).map(nombre => {
             const stats = obj[nombre];
@@ -521,14 +589,19 @@ app.get('/api/examen/reporte-estadisticas', async (req, res) => {
             },
             rendimientoMaterias: formatearStats(materiasStats),
             rendimientoTemas: formatearStats(temasStats),
-            rendimientoSubtemas: formatearStats(subtemasStats)
+            rendimientoSubtemas: formatearStats(subtemasStats),
+            arbolJerarquico: arbolEstructurado // ¡EL ÁRBOL LISTO PARA EL FRONTEND!
         });
     } catch (error) {
         res.status(500).json({ error: "Error interno" });
     }
 });
 
-// REPORTE INDIVIDUAL (Acuse por alumno)
+
+
+// =======================================================
+// 2. REPORTE INDIVIDUAL (Con Árbol Jerárquico para el Alumno)
+// =======================================================
 app.get('/api/examen/reporte-individual/:boleta', async (req, res) => {
     try {
         const boleta = Number(req.params.boleta);
@@ -569,6 +642,11 @@ app.get('/api/examen/reporte-individual/:boleta', async (req, res) => {
             acumular(ex.desglose_subtemas, desgloseSubtemas);
         });
 
+        // ==========================================
+        // CREAMOS EL ÁRBOL (Sin filtro de materia para el Alumno)
+        // ==========================================
+        const arbolEstructurado = construirArbolJerarquico(desgloseSubtemas);
+
         const formatearStats = (obj) => Object.keys(obj).map(nombre => {
             const stats = obj[nombre];
             const porcentaje = stats.total > 0 ? ((stats.aciertos / stats.total) * 100) : 0;
@@ -584,12 +662,14 @@ app.get('/api/examen/reporte-individual/:boleta', async (req, res) => {
             areas: resultadosPorArea, 
             materias: formatearStats(desgloseMaterias),
             temas: formatearStats(desgloseTemas),
-            subtemas: formatearStats(desgloseSubtemas)
+            subtemas: formatearStats(desgloseSubtemas),
+            arbolJerarquico: arbolEstructurado // ¡ÁRBOL INDIVIDUAL PARA SU ACUSE!
         }); 
     } catch (error) {
         res.status(500).json({ error: "Error interno del servidor" });
     }
 });
+
 
 // STATS EN VIVO DEL DASHBOARD DEL ALUMNO
 app.get('/api/examen/stats/:boleta', async (req, res) => {

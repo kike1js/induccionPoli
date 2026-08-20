@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estadísticas del Simulador </title>
+  <title>Estadísticas del Simulador</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- ¡NUEVO!: Librería Chart.js para gráficas profesionales -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     tailwind.config = {
       theme: { extend: { colors: { ipnGuinda: '#6c1d45', ipnGuindaClaro: '#8a2558' } } }
@@ -33,7 +35,7 @@
     <!-- PANEL GENERAL -->
     <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 mb-8">
       <h2 class="text-2xl font-bold text-ipnGuinda mb-4"><i class="fas fa-calendar-alt mr-2"></i> Filtro de Búsqueda Global</h2>
-      <form id="formEstadisticas" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+      <form id="formEstadisticas" class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
         <div>
           <label class="block text-sm font-bold text-gray-700 mb-2">Fecha Inicio</label>
           <input type="date" id="fechaInicio" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50">
@@ -51,21 +53,44 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-2">Grupo (Opcional)</label>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Grupo</label>
           <input type="text" id="filtroGrupo" placeholder="Ej. 4IV15" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50 uppercase">
         </div>
+        <!-- Selector de Materia para el reporte detallado (Opcional) -->
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Materia Específica</label>
+          <select id="filtroMateria" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-ipnGuinda bg-gray-50">
+            <option value="TODAS">TODAS</option>
+            <option value="Habilidad del Razonamiento Verbal">Hab. Verbal</option>
+            <option value="Español">Español</option>
+            <option value="Historia">Historia</option>
+            <option value="Formación Cívica y Ética">Cívica y Ética</option>
+            <option value="Habilidad del Razonamiento Matemático">Hab. Matemática</option>
+            <option value="Matemáticas">Matemáticas</option>
+            <option value="Física">Física</option>
+            <option value="Química">Química</option>
+            <option value="Biología">Biología</option>
+            <option value="Geografía">Geografía</option>
+          </select>
+        </div>
+
         <div class="flex gap-2">
           <button type="submit" id="btnGenerar" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-2 rounded-lg transition shadow flex justify-center items-center gap-1 text-sm">
-            <i class="fas fa-search"></i> Consultar
+            <i class="fas fa-search"></i>
           </button>
-          <button type="button" id="btnPDF" disabled class="w-full bg-gray-400 text-white font-bold py-3 px-2 rounded-lg transition shadow flex justify-center items-center gap-1 text-sm cursor-not-allowed">
-            <i class="fas fa-file-pdf"></i> PDF
+          <button type="button" id="btnPDF" disabled class="w-full bg-gray-400 text-white font-bold py-3 px-2 rounded-lg transition shadow flex justify-center items-center gap-1 text-sm cursor-not-allowed" title="Reporte Analítico">
+            <i class="fas fa-file-alt"></i>
+          </button>
+          <!-- ¡NUEVO BOTÓN DE GRÁFICAS! -->
+          <button type="button" id="btnPDFGraficas" disabled class="w-full bg-gray-400 text-white font-bold py-3 px-2 rounded-lg transition shadow flex justify-center items-center gap-1 text-sm cursor-not-allowed" title="Reporte Gráfico">
+            <i class="fas fa-chart-pie"></i>
           </button>
         </div>
       </form>
     </div>
     
     <div id="panelResultados" class="hidden">
+      <!-- Indicadores KPIs -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         <div class="bg-white p-4 rounded-2xl shadow border border-gray-200 text-center">
           <div class="text-gray-500 text-xs font-bold mb-1 uppercase">Alumnos Eval.</div>
@@ -89,16 +114,17 @@
         </div>
       </div>
 
+      <!-- NUEVAS GRÁFICAS CHART.JS EN LA INTERFAZ -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <div class="bg-white p-6 rounded-2xl shadow border border-gray-200">
-          <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Promedios Generales (Base 10)</h3>
-          <ul class="space-y-4" id="listaPromedios"></ul>
+          <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2 text-center">Rendimiento por Área (Base 10)</h3>
+          <!-- Lienzo Gráfica Áreas -->
+          <canvas id="chartAreas"></canvas>
         </div>
         <div class="bg-white p-6 rounded-2xl shadow border border-gray-200">
-          <h3 class="text-lg font-bold text-red-600 mb-4 border-b border-red-200 pb-2">
-            <i class="fas fa-exclamation-circle"></i> Focos Rojos (Materias más bajas)
-          </h3>
-          <ul class="space-y-3" id="listaDebiles"></ul>
+          <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2 text-center">Desempeño General por Materias (%)</h3>
+          <!-- Lienzo Gráfica Materias -->
+          <canvas id="chartMaterias"></canvas>
         </div>
       </div>
     </div> 
@@ -127,31 +153,6 @@
             <p class="text-sm text-green-700" id="txtAlumnoEncontrado">Boleta: --</p>
         </div>
         <i class="fas fa-user text-green-600 text-2xl opacity-50"></i>
-      </div>
-
-      <div id="tablasIndividualUI" class="hidden mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <h3 class="text-lg font-bold text-green-700 mb-3"><i class="fas fa-arrow-up"></i> Top 5: Fortalezas</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-gray-500">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                        <tr><th>Materia</th><th>Aciertos</th></tr>
-                    </thead>
-                    <tbody id="tbodyFortalezas"></tbody>
-                </table>
-            </div>
-        </div>
-        <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <h3 class="text-lg font-bold text-red-700 mb-3"><i class="fas fa-arrow-down"></i> Top 5: Áreas a Mejorar</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-gray-500">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                        <tr><th>Materia</th><th>Aciertos</th></tr>
-                    </thead>
-                    <tbody id="tbodyDebilidades"></tbody>
-                </table>
-            </div>
-        </div>
       </div>
     </div>
 

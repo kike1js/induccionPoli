@@ -1,9 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('formEstadisticas');
     const btnPDF = document.getElementById('btnPDF');
+    const btnPDFGraficas = document.getElementById('btnPDFGraficas'); 
     
     let datosStats = null; 
     let datosProfesor = null; 
+    
+    // Variables para destruir gráficas viejas antes de dibujar nuevas
+    let chartAreasInstance = null;
+    let chartMateriasInstance = null;
 
     const hoy = new Date();
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -11,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('fechaFin').value = hoy.toISOString().split('T')[0];
 
     // ========================================================
-    // BÚSQUEDA GLOBAL
+    // 1. BÚSQUEDA GLOBAL Y DIBUJADO DE GRÁFICAS
     // ========================================================
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -19,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fechaFin = document.getElementById('fechaFin').value;
         const inputGrupo = document.getElementById('filtroGrupo').value.trim();
         const inputTurno = document.getElementById('filtroTurno').value;
+        const inputMateria = document.getElementById('filtroMateria').value;
         const btnGenerar = document.getElementById('btnGenerar');
 
         if (fechaInicio && fechaFin && fechaInicio > fechaFin) {
@@ -28,19 +34,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             btnGenerar.disabled = true;
-            btnGenerar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>...';
+            btnGenerar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-            // 1. Estadísticas Globales
+            // Petición 1: Estadísticas Globales
             let urlStats = `https://www.bitacora.cecyt14.ipn.mx/api/examen/reporte-estadisticas?`;
             if(fechaInicio) urlStats += `fechaInicio=${fechaInicio}&`;
             if(fechaFin) urlStats += `fechaFin=${fechaFin}&`;
-            if(inputTurno) urlStats += `turno=${inputTurno}`;
+            if(inputTurno) urlStats += `turno=${inputTurno}&`;
+            if(inputGrupo) urlStats += `grupo=${inputGrupo}&`;
+            if(inputMateria) urlStats += `materia=${inputMateria}`;
             
             const resStats = await fetch(urlStats);
             datosStats = await resStats.json(); 
             if (!resStats.ok) throw new Error(datosStats.error || "Error en estadísticas");
 
-            // 2. Reporte de Profesor (Tramposos y Faltantes)
+            // Petición 2: Reporte de Profesor (Tramposos y Faltantes)
             let urlProfesor = `https://www.bitacora.cecyt14.ipn.mx/api/examen/reporte-profesor?`;
             if(fechaInicio) urlProfesor += `fechaInicio=${fechaInicio}&`;
             if(fechaFin) urlProfesor += `fechaFin=${fechaFin}&`;
@@ -53,16 +61,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             pintarDashboard(datosStats, datosProfesor);
             
+            // Habilitamos botones PDF
             btnPDF.disabled = false;
             btnPDF.classList.replace('bg-gray-400', 'bg-red-600');
             btnPDF.classList.replace('cursor-not-allowed', 'hover:bg-red-700');
+
+            btnPDFGraficas.disabled = false;
+            btnPDFGraficas.classList.replace('bg-gray-400', 'bg-ipnGuinda');
+            btnPDFGraficas.classList.replace('cursor-not-allowed', 'hover:bg-ipnGuindaClaro');
 
         } catch (error) {
             console.error(error);
             alert("Error consultando la base de datos.");
         } finally {
             btnGenerar.disabled = false;
-            btnGenerar.innerHTML = '<i class="fas fa-search"></i> Consultar';
+            btnGenerar.innerHTML = '<i class="fas fa-search"></i>';
         }
     });
 
@@ -75,190 +88,218 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('kpiFaltantes').innerText = prof.totalFaltantes;
         document.getElementById('kpiTramposos').innerText = prof.totalTramposos; 
 
-        const listaP = document.getElementById('listaPromedios');
-        listaP.innerHTML = `
-            <li class="flex justify-between items-center bg-gray-50 p-3 rounded"><span class="font-semibold text-gray-700">Ciencias Sociales</span> <span class="font-black text-ipnGuinda">${stats.promedios.sociales}</span></li>
-            <li class="flex justify-between items-center bg-gray-50 p-3 rounded"><span class="font-semibold text-gray-700">Ciencias Exactas</span> <span class="font-black text-ipnGuinda">${stats.promedios.exactas}</span></li>
-            <li class="flex justify-between items-center bg-gray-50 p-3 rounded"><span class="font-semibold text-gray-700">Cs. Experimentales</span> <span class="font-black text-ipnGuinda">${stats.promedios.experimentales}</span></li>
-        `;
+        // Destruir gráficas previas
+        if (chartAreasInstance) chartAreasInstance.destroy();
+        if (chartMateriasInstance) chartMateriasInstance.destroy();
 
-        const listaD = document.getElementById('listaDebiles');
-        listaD.innerHTML = '';
-        if(stats.rendimientoMaterias.length === 0) {
-            listaD.innerHTML = '<li class="text-gray-500 italic">No hay datos suficientes.</li>';
-        } else {
-            const soloDebilesUI = [...stats.rendimientoMaterias].slice(0, 5);
-            soloDebilesUI.forEach((item, index) => {
-                listaD.innerHTML += `
-                    <li class="flex justify-between items-center">
-                        <span class="text-gray-700 text-sm"><span class="font-bold text-red-500 mr-2">#${index+1}</span> ${item.nombre}</span>
-                        <span class="text-xs font-bold bg-red-100 text-red-700 px-2 py-1 rounded">${item.porcentaje}% Acierto</span>
-                    </li>
-                `;
-            });
-        }
+        // Gráfica de Áreas
+        const ctxAreas = document.getElementById('chartAreas').getContext('2d');
+        chartAreasInstance = new Chart(ctxAreas, {
+            type: 'bar',
+            data: {
+                labels: ['Ciencias Sociales', 'Ciencias Exactas', 'Experimentales'],
+                datasets: [{
+                    label: 'Promedio General (Base 10)',
+                    data: [stats.promedios.sociales, stats.promedios.exactas, stats.promedios.experimentales],
+                    backgroundColor: ['#6c1d45', '#1e3a8a', '#15803d'],
+                    borderRadius: 4
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true, max: 10 } }, animation: { duration: 0 } }
+        });
 
-        // ===============================================
-        // INYECCIÓN DINÁMICA: TABLA DE ALUMNOS FALTANTES
-        // ===============================================
-        let tablaFaltantes = document.getElementById('tablaFaltantesUI');
-        if(!tablaFaltantes) {
-            tablaFaltantes = document.createElement('div');
-            tablaFaltantes.id = 'tablaFaltantesUI';
-            tablaFaltantes.className = 'bg-white p-6 rounded-2xl shadow border border-gray-200 mt-8 mb-8';
-            document.getElementById('panelResultados').appendChild(tablaFaltantes);
-        }
-        
-        let htmlF = `
-            <h3 class="text-lg font-bold text-yellow-600 mb-4 border-b border-yellow-200 pb-2">
-                <i class="fas fa-user-clock"></i> Estatus de Exámenes: Alumnos Incompletos
-            </h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-gray-500">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3">Nombre</th>
-                            <th class="px-4 py-3">Boleta</th>
-                            <th class="px-4 py-3 text-center">Sociales</th>
-                            <th class="px-4 py-3 text-center">Exactas</th>
-                            <th class="px-4 py-3 text-center">Experimentales</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
+        // Gráfica de Materias
+        const materiasOrdenadas = [...stats.rendimientoMaterias].sort((a, b) => b.porcentaje - a.porcentaje);
+        const labelsMaterias = materiasOrdenadas.map(m => m.nombre);
+        const dataMaterias = materiasOrdenadas.map(m => m.porcentaje);
 
-        if(prof.listaFaltantes.length === 0){
-            htmlF += `<tr><td colspan="5" class="px-4 py-4 text-center font-bold text-green-600">Todos los alumnos consultados han completado sus exámenes.</td></tr>`;
-        } else {
-            prof.listaFaltantes.forEach(f => {
-                // Función para colocar insignias visuales (badges) en la UI
-                const getBadge = (estado) => {
-                    if (estado === 'finalizado') return '<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">Finalizado</span>';
-                    if (estado === 'en_curso') return '<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">En Curso</span>';
-                    return '<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold">No Iniciado</span>';
-                };
-                
-                // Leemos los estados extraídos del modelo
-                const stSoc = f.estados ? f.estados.sociales : (f.faltan.includes('Ciencias Sociales') ? 'no_iniciado' : 'finalizado');
-                const stExa = f.estados ? f.estados.exactas : (f.faltan.includes('Ciencias Exactas') ? 'no_iniciado' : 'finalizado');
-                const stExp = f.estados ? f.estados.experimentales : (f.faltan.includes('Cs. Experimentales') ? 'no_iniciado' : 'finalizado');
-
-                htmlF += `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-4 py-3 font-medium text-gray-900">${f.nombre}</td>
-                        <td class="px-4 py-3">${f.boleta}</td>
-                        <td class="px-4 py-3 text-center">${getBadge(stSoc)}</td>
-                        <td class="px-4 py-3 text-center">${getBadge(stExa)}</td>
-                        <td class="px-4 py-3 text-center">${getBadge(stExp)}</td>
-                    </tr>
-                `;
-            });
-        }
-        htmlF += `</tbody></table></div>`;
-        tablaFaltantes.innerHTML = htmlF;
+        const ctxMaterias = document.getElementById('chartMaterias').getContext('2d');
+        chartMateriasInstance = new Chart(ctxMaterias, {
+            type: 'bar',
+            data: {
+                labels: labelsMaterias,
+                datasets: [{
+                    label: '% de Acierto Global',
+                    data: dataMaterias,
+                    backgroundColor: '#8a2558',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                scales: { x: { beginAtZero: true, max: 100 } },
+                plugins: { legend: { display: false } },
+                animation: { duration: 0 }
+            }
+        });
     }
 
-    // ==========================
-    // GENERAR PDF GLOBAL
-    // ==========================
-    btnPDF.addEventListener('click', () => {
-        if(!datosStats || !datosProfesor) return;
+    // ========================================================
+    // 2. GENERADORES DE PDF GLOBALES (GRÁFICO Y ANALÍTICO)
+    // ========================================================
+    const estilosComunesPDF = `
+        body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 20px; font-size: 11px; }
+        .header { border-bottom: 2px solid #6c1d45; padding-bottom: 8px; margin-bottom: 12px; text-align: center; }
+        .header h1 { color: #6c1d45; margin: 0; font-size: 16px; text-transform: uppercase; }
+        .subtitle { color: #555; font-size: 11px; margin-top: 4px; }
+        .section-title { font-size: 14px; color: #6c1d45; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 15px; margin-bottom: 8px;}
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 10px; }
+        th { background-color: #f3f4f6; color: #333; padding: 4px 6px; text-align: left; border: 1px solid #ddd; font-size: 10px;}
+        td { padding: 3px 6px; border: 1px solid #ddd; }
+        .badge { padding: 2px 5px; border-radius: 3px; font-size: 9px; font-weight: bold; color: white; }
+        .bg-red { background-color: #dc2626; } .bg-green { background-color: #16a34a; } .bg-blue { background-color: #2563eb; }
+        .footer { margin-top: 20px; text-align: center; font-size: 9px; color: #999; border-top: 1px solid #eee; padding-top: 8px;}
+        @media print { .page-break { page-break-before: always; } }
+    `;
 
+    // 2A. REPORTE GRÁFICO EJECUTIVO
+    btnPDFGraficas.addEventListener('click', () => {
+        if(!chartAreasInstance || !chartMateriasInstance) return;
+        const imgAreas = document.getElementById('chartAreas').toDataURL('image/png');
+        const imgMaterias = document.getElementById('chartMaterias').toDataURL('image/png');
         const ventanaImpresion = window.open('', '', 'height=800,width=800');
-        
-        // Creador de tablas genérico para %
-        const crearTablaGlobal = (arreglo, titulo) => {
-            if (!arreglo || arreglo.length === 0) return '';
-            let html = `<h2 class="section-title">${titulo}</h2><table><tr><th>#</th><th>Nombre</th><th>% Acierto</th></tr>`;
-            // Quitamos el límite de .slice(0, 10) para desglosar TODOS los temas y subtemas en el reporte global
-            arreglo.forEach((item, i) => { 
-                html += `<tr><td>${i+1}</td><td>${item.nombre}</td><td style="font-weight:bold;">${item.porcentaje}%</td></tr>`;
-            });
-            return html + '</table>';
-        };
-
-        // Faltantes y Tramposos
-        let faltantesHTML = datosProfesor.listaFaltantes.length === 0 
-            ? '<p style="color:green; text-align:center; margin-top:10px;">✓ Todos los alumnos han completado sus exámenes.</p>' 
-            : `<table><tr style="background:#ca8a04;"><th>Nombre</th><th>Boleta</th><th>Sociales</th><th>Exactas</th><th>Experimentales</th></tr>
-               ${datosProfesor.listaFaltantes.map(f => {
-                   const formatEstado = (st) => {
-                       if(st === 'finalizado') return '<span style="color:green;">Finalizado</span>';
-                       if(st === 'en_curso') return '<span style="color:blue;">En Curso</span>';
-                       return '<span style="color:red;">No Iniciado</span>';
-                   };
-                   
-                   const stSoc = f.estados ? f.estados.sociales : (f.faltan.includes('Ciencias Sociales') ? 'no_iniciado' : 'finalizado');
-                   const stExa = f.estados ? f.estados.exactas : (f.faltan.includes('Ciencias Exactas') ? 'no_iniciado' : 'finalizado');
-                   const stExp = f.estados ? f.estados.experimentales : (f.faltan.includes('Cs. Experimentales') ? 'no_iniciado' : 'finalizado');
-                   
-                   return `<tr>
-                     <td>${f.nombre}</td>
-                     <td>${f.boleta}</td>
-                     <td style="text-align:center; font-weight:bold;">${formatEstado(stSoc)}</td>
-                     <td style="text-align:center; font-weight:bold;">${formatEstado(stExa)}</td>
-                     <td style="text-align:center; font-weight:bold;">${formatEstado(stExp)}</td>
-                   </tr>`;
-               }).join('')}</table>`;
-
-        let trampososHTML = datosProfesor.listaTramposos.length === 0 
-            ? '<p style="color:green; text-align:center; margin-top:10px;">✓ No se detectaron infracciones.</p>' 
-            : `<table><tr style="background:#dc2626;"><th>Nombre</th><th>Boleta</th><th>Grupo</th><th>Turno</th><th>Anulados</th></tr>
-               ${datosProfesor.listaTramposos.map(t => `<tr><td>${t.nombre}</td><td>${t.boleta}</td><td>${t.grupo}</td><td>${t.turno}</td><td style="color:#dc2626;">${t.examenesAnulados.join(', ').toUpperCase()}</td></tr>`).join('')}</table>`;
 
         const htmlDocument = `
             <html>
             <head>
-                <title>Acuse Grupal</title>
+                <title>Reporte Gráfico Ejecutivo</title>
                 <style>
-                    body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 30px; }
-                    .header { border-bottom: 3px solid #6c1d45; padding-bottom: 15px; margin-bottom: 15px; text-align: center; }
-                    .header h1 { color: #6c1d45; margin: 0; font-size: 22px; text-transform: uppercase; }
-                    .subtitle { color: #555; font-size: 12px; margin-top: 5px; }
-                    .section-title { font-size: 14px; color: #6c1d45; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 20px;}
-                    .grid { display: flex; justify-content: space-between; margin-top: 15px; gap: 10px;}
-                    .box { background: #f9f9f9; padding: 15px; border: 1px solid #ddd; width: 20%; text-align: center; border-radius: 8px; font-size: 12px;}
-                    .box strong { display: block; font-size: 20px; color: #333; margin-top: 10px;}
-                    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-                    th { background-color: #6c1d45; color: white; padding: 8px; text-align: left; }
-                    td { padding: 6px; border-bottom: 1px solid #eee; }
+                    ${estilosComunesPDF}
+                    .chart-container { margin: 10px auto; width: 90%; text-align: center; }
+                    img { width: 100%; max-height: 400px; object-fit: contain; border: 1px solid #eee; padding: 10px; border-radius: 6px; }
                 </style>
             </head>
             <body>
                 <div class="header">
-                    <h1>Reporte Directivo - Simulador de Inducción</h1>
-                    <div class="subtitle">CECyT 14 "Luis Enrique Erro" - UDI</div>
-                    <div class="subtitle" style="margin-top:10px; font-size:14px;">
-                        <strong>Filtros:</strong> Turno: ${datosProfesor.filtroTurno} | Grupo: ${datosProfesor.filtroGrupo} 
+                    <h1>Reporte Gráfico Ejecutivo</h1>
+                    <div class="subtitle">Simulador de Inducción - CECyT 14</div>
+                    <div class="subtitle"><strong>Grupo:</strong> ${document.getElementById('filtroGrupo').value || 'TODOS'} | <strong>Turno:</strong> ${document.getElementById('filtroTurno').value} | <strong>Materia:</strong> ${document.getElementById('filtroMateria').value}</div>
+                </div>
+
+                <div class="chart-container">
+                    <h2 class="section-title" style="text-align:center;">1. Promedio por Áreas de Conocimiento</h2>
+                    <img src="${imgAreas}" />
+                </div>
+                <div class="page-break"></div>
+                <div class="chart-container">
+                    <h2 class="section-title" style="text-align:center;">2. Desempeño General por Materias (%)</h2>
+                    <img src="${imgMaterias}" />
+                </div>
+            </body>
+            </html>
+        `;
+        ventanaImpresion.document.write(htmlDocument);
+        ventanaImpresion.document.close();
+        ventanaImpresion.focus();
+        setTimeout(() => { ventanaImpresion.print(); ventanaImpresion.close(); }, 500);
+    });
+
+    // 2B. REPORTE ANALÍTICO TABULAR (Árbol con Porcentajes)
+    btnPDF.addEventListener('click', () => {
+        if(!datosStats || !datosProfesor) return;
+        const ventanaImpresion = window.open('', '', 'height=800,width=800');
+        
+        // Constructor Ultra-Compacto del Árbol Grupal (Con %)
+        const crearArbolGlobal = (arbol) => {
+            let html = `<h2 class="section-title">Análisis de Precisión (Materia ➔ Tema ➔ Subtema)</h2>`;
+            for (const [materia, dataMateria] of Object.entries(arbol)) {
+                if(dataMateria.total === 0) continue;
+                const porcMat = ((dataMateria.aciertos / dataMateria.total) * 100).toFixed(1);
+                html += `
+                <div style="margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; page-break-inside: avoid;">
+                    <div style="background-color: #e5e7eb; padding: 4px 8px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between;">
+                        <span>📚 ${materia.toUpperCase()}</span>
+                        <span>Global: ${porcMat}% (${dataMateria.aciertos}/${dataMateria.total})</span>
+                    </div>
+                    <table style="margin:0; border:none; width: 100%;">
+                        <tr style="background-color: #f9fafb;">
+                            <th style="border:none; border-bottom: 1px solid #ddd;">Jerarquía Temática</th>
+                            <th style="border:none; border-bottom: 1px solid #ddd; width: 60px; text-align:center;">Aciertos</th>
+                            <th style="border:none; border-bottom: 1px solid #ddd; width: 50px; text-align:center;">%</th>
+                        </tr>`;
+
+                for (const [tema, dataTema] of Object.entries(dataMateria.temas)) {
+                    if(dataTema.total === 0) continue;
+                    const porcTema = ((dataTema.aciertos / dataTema.total) * 100).toFixed(1);
+                    html += `
+                        <tr style="background-color: #fdfdfd;">
+                            <td style="padding: 3px 6px; font-weight: bold; color: #4b5563; border:none; border-bottom: 1px solid #eee;">↳ ${tema}</td>
+                            <td style="padding: 3px; text-align: center; font-weight: bold; border:none; border-bottom: 1px solid #eee;">${dataTema.aciertos}/${dataTema.total}</td>
+                            <td style="padding: 3px; text-align: center; font-weight: bold; border:none; border-bottom: 1px solid #eee;">${porcTema}%</td>
+                        </tr>`;
+
+                    for (const [subtema, dataSubtema] of Object.entries(dataTema.subtemas)) {
+                        if(dataSubtema.total === 0) continue;
+                        const porcSub = ((dataSubtema.aciertos / dataSubtema.total) * 100).toFixed(1);
+                        const colorSub = porcSub < 60 ? 'color: #dc2626;' : 'color: #333;';
+                        html += `
+                        <tr>
+                            <td style="padding: 2px 6px 2px 20px; border:none; border-bottom: 1px solid #f5f5f5; ${colorSub}">• ${subtema}</td>
+                            <td style="padding: 2px; text-align: center; border:none; border-bottom: 1px solid #f5f5f5; ${colorSub}">${dataSubtema.aciertos}/${dataSubtema.total}</td>
+                            <td style="padding: 2px; text-align: center; border:none; border-bottom: 1px solid #f5f5f5; ${colorSub}">${porcSub}%</td>
+                        </tr>`;
+                    }
+                }
+                html += `</table></div>`;
+            }
+            return html;
+        };
+
+        // Tablas Faltantes y Tramposos compactas
+        let faltantesHTML = datosProfesor.listaFaltantes.length === 0 
+            ? '<p style="color:green; text-align:center; font-size: 11px;">✓ Todos los alumnos han completado sus exámenes.</p>' 
+            : `<table><tr style="background:#fefce8;"><th style="background:#fefce8;">Boleta/Nombre</th><th style="background:#fefce8;">Sociales</th><th style="background:#fefce8;">Exactas</th><th style="background:#fefce8;">Exp.</th></tr>
+               ${datosProfesor.listaFaltantes.map(f => {
+                   const formatEstado = (st) => st === 'finalizado' ? '<span class="badge bg-green">FIN</span>' : (st === 'en_curso' ? '<span class="badge bg-blue">CURSO</span>' : '<span class="badge bg-red">NADA</span>');
+                   const stSoc = f.estados ? f.estados.sociales : 'finalizado';
+                   const stExa = f.estados ? f.estados.exactas : 'finalizado';
+                   const stExp = f.estados ? f.estados.experimentales : 'finalizado';
+                   return `<tr><td>${f.boleta} - ${f.nombre}</td><td style="text-align:center;">${formatEstado(stSoc)}</td><td style="text-align:center;">${formatEstado(stExa)}</td><td style="text-align:center;">${formatEstado(stExp)}</td></tr>`;
+               }).join('')}</table>`;
+
+        let trampososHTML = datosProfesor.listaTramposos.length === 0 
+            ? '<p style="color:green; text-align:center; font-size: 11px;">✓ No se detectaron infracciones.</p>' 
+            : `<table><tr style="background:#fef2f2;"><th style="background:#fef2f2;">Alumno</th><th style="background:#fef2f2;">Boleta</th><th style="background:#fef2f2;">Anulados</th></tr>
+               ${datosProfesor.listaTramposos.map(t => `<tr><td>${t.nombre}</td><td>${t.boleta}</td><td style="color:#dc2626; font-weight:bold;">${t.examenesAnulados.join(', ').toUpperCase()}</td></tr>`).join('')}</table>`;
+
+        const htmlDocument = `
+            <html>
+            <head><title>Acuse Analítico - CECyT 14</title><style>${estilosComunesPDF}</style></head>
+            <body>
+                <div class="header">
+                    <h1>Reporte Directivo Analítico</h1>
+                    <div class="subtitle">Turno: ${datosProfesor.filtroTurno} | Grupo: ${datosProfesor.filtroGrupo} | Materia: ${document.getElementById('filtroMateria').value}</div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; gap: 10px;">
+                    <div style="width: 50%;">
+                        <h2 class="section-title">1. Desempeño por Área (Base 10)</h2>
+                        <table>
+                            <tr><th>Área</th><th>Promedio</th></tr>
+                            <tr><td>Sociales</td><td>${datosStats.promedios.sociales}</td></tr>
+                            <tr><td>Exactas</td><td>${datosStats.promedios.exactas}</td></tr>
+                            <tr><td>Experimentales</td><td>${datosStats.promedios.experimentales}</td></tr>
+                        </table>
+                    </div>
+                    <div style="width: 50%;">
+                        <h2 class="section-title">2. Participación</h2>
+                        <table>
+                            <tr><td>Evaluados Totales</td><td style="font-weight:bold;">${datosProfesor.totalAlumnosConsultados}</td></tr>
+                            <tr><td>Exámenes Entregados</td><td style="font-weight:bold;">${datosStats.participacion.totalExamenes}</td></tr>
+                            <tr><td>Alumnos Completos</td><td style="font-weight:bold;">${datosStats.participacion.alumnosCompletaronTodo}</td></tr>
+                        </table>
                     </div>
                 </div>
 
-                <h2 class="section-title">1. Resumen de Participación</h2>
-                <div class="grid">
-                    <div class="box">Evaluados <strong>${datosProfesor.totalAlumnosConsultados}</strong></div>
-                    <div class="box">Exámenes <strong>${datosStats.participacion.totalExamenes}</strong></div>
-                    <div class="box">Completos <strong>${datosStats.participacion.alumnosCompletaronTodo}</strong></div>
-                    <div class="box" style="border-color:#fef08a; background:#fefce8;">Faltantes <strong style="color:#ca8a04;">${datosProfesor.totalFaltantes}</strong></div>
-                    <div class="box" style="border-color:#fca5a5; background:#fef2f2;">Infracciones <strong style="color:#dc2626;">${datosProfesor.totalTramposos}</strong></div>
-                </div>
+                ${crearArbolGlobal(datosStats.arbolJerarquico)}
 
-                <h2 class="section-title">2. Rendimiento por Área (Promedio General Base 10)</h2>
-                <table>
-                    <tr><th>Área de Conocimiento</th><th>Promedio Calculado</th></tr>
-                    <tr><td>Ciencias Sociales</td><td>${datosStats.promedios.sociales}</td></tr>
-                    <tr><td>Ciencias Exactas</td><td>${datosStats.promedios.exactas}</td></tr>
-                    <tr><td>Ciencias Experimentales</td><td>${datosStats.promedios.experimentales}</td></tr>
-                </table>
-
-                ${crearTablaGlobal([...datosStats.rendimientoMaterias].reverse(), '3. Áreas Fuertes (Mejores Materias)')}
-                ${crearTablaGlobal(datosStats.rendimientoTemas, '4. Focos Rojos (Peores Temas)')}
-                ${crearTablaGlobal(datosStats.rendimientoSubtemas, '5. Precisión Crítica (Peores Subtemas)')}
-
-                <h2 class="section-title" style="color:#ca8a04;">6. Alumnos con Exámenes Faltantes</h2>
+                <h2 class="section-title" style="color:#ca8a04;">Alumnos Incompletos</h2>
                 ${faltantesHTML}
 
-                <h2 class="section-title" style="color:#dc2626;">7. Reporte de Infracciones y Fraudes</h2>
+                <h2 class="section-title" style="color:#dc2626;">Infracciones y Fraudes</h2>
                 ${trampososHTML}
+                
+                <div class="footer">Generado automáticamente por PoliAprende. ${new Date().toLocaleString()}</div>
             </body>
             </html>
         `;
@@ -269,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ========================================================
-    // BÚSQUEDA INDIVIDUAL Y PDF
+    // 3. BÚSQUEDA INDIVIDUAL Y PDF (Solo Fracciones Acierto/Total)
     // ========================================================
     const formIndividual = document.getElementById('formIndividual');
     const btnPDFIndividual = document.getElementById('btnPDFIndividual');
@@ -283,10 +324,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             btnBuscar.disabled = true;
-            btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+            btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             resUI.classList.add('hidden');
-            document.getElementById('tablasIndividualUI')?.classList.add('hidden');
-            
             btnPDFIndividual.disabled = true;
             btnPDFIndividual.classList.replace('bg-red-600', 'bg-gray-400');
             btnPDFIndividual.classList.add('cursor-not-allowed');
@@ -295,26 +334,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await respuesta.json();
 
             if (!respuesta.ok) throw new Error(data.error || "No encontrado");
-
             datosAlumnoActual = data;
             
             document.getElementById('txtNombreAlumno').innerText = data.nombre;
             document.getElementById('txtAlumnoEncontrado').innerText = `Boleta: ${data.boleta} | Grupo: ${data.grupo} | Turno: ${data.turno}`;
             resUI.classList.remove('hidden');
-
-            const uiTablas = document.getElementById('tablasIndividualUI');
-            if(uiTablas) {
-                uiTablas.classList.remove('hidden');
-                const fuertes = [...data.materias].reverse().slice(0, 5);
-                const debiles = [...data.materias].slice(0, 5);
-
-                document.getElementById('tbodyFortalezas').innerHTML = fuertes.map(m => `
-                    <tr class="border-b"><td class="py-2">${m.nombre}</td><td class="py-2 text-green-600 font-bold">${m.aciertos}/${m.total}</td></tr>
-                `).join('');
-                document.getElementById('tbodyDebilidades').innerHTML = debiles.map(m => `
-                    <tr class="border-b"><td class="py-2">${m.nombre}</td><td class="py-2 text-red-600 font-bold">${m.aciertos}/${m.total}</td></tr>
-                `).join('');
-            }
 
             btnPDFIndividual.disabled = false;
             btnPDFIndividual.classList.replace('bg-gray-400', 'bg-red-600');
@@ -334,34 +358,50 @@ document.addEventListener('DOMContentLoaded', () => {
         const d = datosAlumnoActual;
         const ventanaImpresion = window.open('', '', 'height=800,width=800');
         
-        // Creador de tablas genérico para Aciertos (Ej: 6/12)
-        const crearTablaAciertos = (arreglo, titulo) => {
-            if (!arreglo || arreglo.length === 0) return '';
-            let html = `<h2 class="section-title">${titulo}</h2><table><tr><th>Nombre</th><th>Aciertos</th></tr>`;
-            arreglo.forEach(item => {
-                html += `<tr><td>${item.nombre}</td><td style="font-weight:bold;">${item.aciertos} / ${item.total}</td></tr>`;
-            });
-            return html + '</table>';
+        // Constructor Ultra-Compacto del Árbol Individual (SÓLO FRACCIONES ACIERTOS/TOTAL)
+        const crearArbolIndividual = (arbol) => {
+            let html = `<h2 class="section-title">Análisis de Desempeño por Materia, Tema y Subtema</h2>`;
+            for (const [materia, dataMateria] of Object.entries(arbol)) {
+                if(dataMateria.total === 0) continue;
+                html += `
+                <div style="margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; page-break-inside: avoid;">
+                    <div style="background-color: #e5e7eb; padding: 4px 8px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between;">
+                        <span>📚 ${materia.toUpperCase()}</span>
+                        <span>Total: ${dataMateria.aciertos}/${dataMateria.total}</span>
+                    </div>
+                    <table style="margin:0; border:none; width: 100%;">
+                        <tr style="background-color: #f9fafb;">
+                            <th style="border:none; border-bottom: 1px solid #ddd;">Jerarquía Temática</th>
+                            <th style="border:none; border-bottom: 1px solid #ddd; width: 80px; text-align:center;">Aciertos</th>
+                        </tr>`;
+
+                for (const [tema, dataTema] of Object.entries(dataMateria.temas)) {
+                    if(dataTema.total === 0) continue;
+                    html += `
+                        <tr style="background-color: #fdfdfd;">
+                            <td style="padding: 3px 6px; font-weight: bold; color: #4b5563; border:none; border-bottom: 1px solid #eee;">↳ ${tema}</td>
+                            <td style="padding: 3px; text-align: center; font-weight: bold; border:none; border-bottom: 1px solid #eee;">${dataTema.aciertos}/${dataTema.total}</td>
+                        </tr>`;
+
+                    for (const [subtema, dataSubtema] of Object.entries(dataTema.subtemas)) {
+                        if(dataSubtema.total === 0) continue;
+                        const isDebil = (dataSubtema.aciertos / dataSubtema.total) < 0.6;
+                        const colorSub = isDebil ? 'color: #dc2626;' : 'color: #333;';
+                        html += `
+                        <tr>
+                            <td style="padding: 2px 6px 2px 20px; border:none; border-bottom: 1px solid #f5f5f5; ${colorSub}">• ${subtema}</td>
+                            <td style="padding: 2px; text-align: center; border:none; border-bottom: 1px solid #f5f5f5; ${colorSub}">${dataSubtema.aciertos}/${dataSubtema.total}</td>
+                        </tr>`;
+                    }
+                }
+                html += `</table></div>`;
+            }
+            return html;
         };
 
         const htmlDocument = `
             <html>
-            <head>
-                <title>Acuse Individual - ${d.boleta}</title>
-                <style>
-                    body { font-family: 'Helvetica', Arial, sans-serif; color: #333; padding: 30px; }
-                    .header { border-bottom: 3px solid #6c1d45; padding-bottom: 18px; margin-bottom: 25px; }
-                    .header h1 { color: #6c1d45; margin: 0; font-size: 20px; text-transform: uppercase; }
-                    .subtitle { color: #555; font-size: 12px; margin-top: 5px; }
-                    .section-title { font-size: 16px; color: #6c1d45; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 30px;}
-                    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-                    th { background-color: #f3f4f6; color: #333; padding: 8px; text-align: left; border: 1px solid #ddd;}
-                    td { padding: 8px; border: 1px solid #ddd; }
-                    .anulado { color: white; background: #dc2626; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight:bold;}
-                    .footer { margin-top: 50px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px;}
-                    .student-info { background: #f9fafb; padding: 13px; border-left: 4px solid #6c1d45; margin-bottom: 15px;}
-                </style>
-            </head>
+            <head><title>Acuse Individual - ${d.boleta}</title><style>${estilosComunesPDF} .student-info { background: #f9fafb; padding: 10px; border-left: 4px solid #6c1d45; margin-bottom: 15px; font-size:11px;}</style></head>
             <body>
                 <div class="header">
                     <h1>Acuse de Resultados Académicos</h1>
@@ -374,22 +414,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     <strong>Turno:</strong> ${d.turno} | <strong>Grupo:</strong> ${d.grupo}
                 </div>
 
-                <h2 class="section-title">1. Calificaciones por Área (Base 10)</h2>
+                <h2 class="section-title">Calificaciones de Área (Base 10)</h2>
                 <table>
                     <tr><th>Área de Conocimiento</th><th>Calificación Obtenida</th></tr>
-                    <tr><td>Ciencias Sociales</td><td>${d.areas.sociales.calificacion} ${d.areas.sociales.anulado ? '<span class="anulado">ANULADO</span>' : ''}</td></tr>
-                    <tr><td>Ciencias Exactas</td><td>${d.areas.exactas.calificacion} ${d.areas.exactas.anulado ? '<span class="anulado">ANULADO</span>' : ''}</td></tr>
-                    <tr><td>Ciencias Experimentales</td><td>${d.areas.experimentales.calificacion} ${d.areas.experimentales.anulado ? '<span class="anulado">ANULADO</span>' : ''}</td></tr>
+                    <tr><td>Ciencias Sociales</td><td>${d.areas.sociales.calificacion} ${d.areas.sociales.anulado ? '<span class="badge bg-red">ANULADO</span>' : ''}</td></tr>
+                    <tr><td>Ciencias Exactas</td><td>${d.areas.exactas.calificacion} ${d.areas.exactas.anulado ? '<span class="badge bg-red">ANULADO</span>' : ''}</td></tr>
+                    <tr><td>Ciencias Experimentales</td><td>${d.areas.experimentales.calificacion} ${d.areas.experimentales.anulado ? '<span class="badge bg-red">ANULADO</span>' : ''}</td></tr>
                 </table>
 
-                ${crearTablaAciertos([...d.materias].reverse(), '2. Desglose General (Por Materia)')}
-                ${crearTablaAciertos([...d.temas].reverse(), '3. Desglose Detallado (Por Tema)')}
-                ${crearTablaAciertos([...d.subtemas].reverse(), '4. Precisión Específica (Por Subtema)')}
+                ${crearArbolIndividual(d.arbolJerarquico)}
 
-                <div class="footer">
-                    Documento de carácter diagnóstico generado por el Sistema PoliAprende.<br>
-                    Fecha de emisión: ${new Date().toLocaleString()}
-                </div>
+                <div class="footer">Documento de carácter diagnóstico generado por PoliAprende. ${new Date().toLocaleString()}</div>
             </body>
             </html>
         `;
