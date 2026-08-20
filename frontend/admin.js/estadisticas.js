@@ -10,6 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let chartAreasInstance = null;
     let chartMateriasInstance = null;
 
+    // ========================================================
+    // HELPER: Normalizador de texto (ignora acentos y mayúsculas)
+    // ========================================================
+    const normalizarTexto = (str) => {
+        if (!str) return "";
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    };
+
     const hoy = new Date();
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     document.getElementById('fechaInicio').value = primerDia.toISOString().split('T')[0];
@@ -225,14 +233,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const ventanaImpresion = window.open('', '', 'height=800,width=800');
         
         const crearArbolGlobal = (arbol) => {
+            const filtroMateriaVal = document.getElementById('filtroMateria').value;
             let html = `<h2 class="section-title">Análisis de Precisión (Materia ➔ Tema ➔ Subtema)</h2>`;
+            
             for (const [materia, dataMateria] of Object.entries(arbol)) {
                 if(dataMateria.total === 0) continue;
+                
+                // VALIDACIÓN EXTRA FRONTAL PARA ASEGURAR EL FILTRADO
+                if (filtroMateriaVal !== 'TODAS' && normalizarTexto(materia) !== normalizarTexto(filtroMateriaVal)) continue;
+
                 const porcMat = ((dataMateria.aciertos / dataMateria.total) * 100).toFixed(1);
                 html += `
                 <div style="margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; page-break-inside: avoid;">
                     <div style="background-color: #e5e7eb; padding: 4px 8px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between;">
-                        <span>${materia.toUpperCase()}</span>
+                        <span>📚 ${materia.toUpperCase()}</span>
                         <span>Global: ${porcMat}% (${dataMateria.aciertos}/${dataMateria.total})</span>
                     </div>
                     <table style="margin:0; border:none; width: 100%;">
@@ -382,13 +396,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const ventanaImpresion = window.open('', '', 'height=800,width=800');
         
         const crearArbolIndividual = (arbol) => {
+            const filtroMateriaVal = document.getElementById('filtroMateria').value;
             let html = `<h2 class="section-title">Análisis de Desempeño por Materia, Tema y Subtema</h2>`;
+            
             for (const [materia, dataMateria] of Object.entries(arbol)) {
                 if(dataMateria.total === 0) continue;
+                
+                // ¡AQUÍ ESTÁ LA MAGIA INDIVIDUAL! Filtramos el árbol de resultados según el selector global
+                if (filtroMateriaVal !== 'TODAS' && normalizarTexto(materia) !== normalizarTexto(filtroMateriaVal)) continue;
+
                 html += `
                 <div style="margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; page-break-inside: avoid;">
                     <div style="background-color: #e5e7eb; padding: 4px 8px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between;">
-                        <span>${materia.toUpperCase()}</span>
+                        <span>📚 ${materia.toUpperCase()}</span>
                         <span>Total: ${dataMateria.aciertos}/${dataMateria.total}</span>
                     </div>
                     <table style="margin:0; border:none; width: 100%;">
