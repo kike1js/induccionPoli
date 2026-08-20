@@ -289,12 +289,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; page-break-inside: avoid;">
                     <div style="background-color: #e5e7eb; padding: 4px 8px; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between;">
                         <span>${materia.toUpperCase()}</span>
-                        <span>Global: ${porcMat}% (${dataMateria.aciertos}/${dataMateria.total})</span>
+                        <span>Global: ${porcMat}% </span>
                     </div>
                     <table style="margin:0; border:none; width: 100%;">
                         <tr style="background-color: #f9fafb;">
                             <th style="border:none; border-bottom: 1px solid #ddd;">Jerarquía Temática</th>
-                            <th style="border:none; border-bottom: 1px solid #ddd; width: 60px; text-align:center;">Aciertos</th>
                             <th style="border:none; border-bottom: 1px solid #ddd; width: 50px; text-align:center;">%</th>
                         </tr>`;
 
