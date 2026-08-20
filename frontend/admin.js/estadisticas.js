@@ -304,7 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     html += `
                         <tr style="background-color: #fdfdfd;">
                             <td style="padding: 3px 6px; font-weight: bold; color: #4b5563; border:none; border-bottom: 1px solid #eee;">↳ ${tema}</td>
-                            <td style="padding: 3px; text-align: center; font-weight: bold; border:none; border-bottom: 1px solid #eee;">${dataTema.aciertos}/${dataTema.total}</td>
                             <td style="padding: 3px; text-align: center; font-weight: bold; border:none; border-bottom: 1px solid #eee;">${porcTema}%</td>
                         </tr>`;
 
